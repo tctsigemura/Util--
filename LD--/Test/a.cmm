@@ -1,0 +1,19 @@
+int a;
+int b = 1;
+int[] h;
+
+public int func1(int n);
+public int func2();
+
+struct XY {
+       int x;
+       int y;
+};
+
+XY[] xy = {{1,2},{3,4}};
+
+void main() {
+  for (int i=0; i<10; i=i+1)
+      a = func1(a);
+  func2();
+}

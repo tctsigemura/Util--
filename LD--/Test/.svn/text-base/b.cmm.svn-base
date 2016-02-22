@@ -1,0 +1,18 @@
+int a;
+int b;
+int[] h = array(5);
+struct XY {
+       int x;
+       int y;
+};
+
+XY[] xy;
+
+public int func2();
+
+public int func1(int x) {
+    for (x=0; x<10; x=x+1)
+    	xy[x].x = x;
+    func2();
+    return x+1;
+}
