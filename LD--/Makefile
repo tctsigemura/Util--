@@ -39,7 +39,8 @@ ld-- : ld.c
 	${CC} ${CFLAGS} -DDATE=${DATE} -DVER=${VER} -DARC=\"TaC\" -o ld-- ld.c
 
 install: ld--
-	install -o root -m 755 ld-- /usr/local/bin
+	install -d -m 755 /usr/local/bin
+	install -m 755 ld-- /usr/local/bin
 
 clean:
 	rm -f *~ *.o *.lst ld-- a.s b.s c.s a.out *.pdf

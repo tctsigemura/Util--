@@ -30,7 +30,8 @@ size-- : size.c
 	${CC} ${CFLAGS} -o size-- size.c
 
 install : size--
-	install -o root -m 755 size-- /usr/local/bin
+	install -d -m 755 /usr/local/bin
+	install -m 755 size-- /usr/local/bin
 
 clean :
 	rm -f size-- *~ *.o

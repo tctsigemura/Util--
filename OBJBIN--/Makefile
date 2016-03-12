@@ -33,7 +33,8 @@ objbin-- : objbin.c
 	${CC} ${CFLAGS} -o objbin-- objbin.c
 
 install : objbin--
-	install -o root -g wheel -m 755 objbin-- /usr/local/bin
+	install -d -m 755 /usr/local/bin
+	install -m 755 objbin-- /usr/local/bin
 
 clean	:
 	rm -f objbin-- *.o *~

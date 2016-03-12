@@ -39,7 +39,8 @@ as-- : syntax.c lexical.c lexical.h util.h util.c
 	-o as-- syntax.c lexical.c util.c
 
 install : as--
-	install -o root -m 755 as-- /usr/local/bin
+	install -d -m 755 /usr/local/bin
+	install -m 755 as-- /usr/local/bin
 
 clean :
 	rm -f *.o as-- *.c~ *.h~ *.txt~ Makefile~ *.s~ *.lst *.pdf
