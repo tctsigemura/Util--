@@ -22,6 +22,7 @@
 /*
  * ld.c : LD-- 本体
  *
+ * 2016.03.12           : 使用方法メッセージ表示用のオプション -h, -v 追加
  * 2012.08.02  v.2.0    : TaC-CPU V2 に対応
  * 2010.12.07           : 1. Usage メッセージがバージョン情報を含むように改良
  *                      : 2. 次のバグを訂正
@@ -40,6 +41,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 #define boolean int                        // boolean 型のつもり
 #define true     1
@@ -444,6 +446,13 @@ void usage(char *name) {
 
 // main 関数
 int main(int argc, char **argv) {
+  if (argc>1 &&
+      (strcmp(argv[1],"-v")==0 ||              //  "-v", "-h" で、使い方と
+       strcmp(argv[1],"-h")==0   ) ) {         //   バージョンを表示
+    usage(argv[0]);
+    exit(0);
+  }
+
   if (argc<3) {
     usage(argv[0]);
     exit(0);
