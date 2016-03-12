@@ -431,9 +431,11 @@ void copyCode(int offs, int segSize, int segBase, int relBase) {
 
 // 使い方表示関数
 void usage(char *name) {
-  fprintf(stderr,"使用方法 : %s <outfile> <objfile>...\n", name);
+  fprintf(stderr,"使用方法 : %s [-h] [-v] <outfile> <objfile>...\n", name);
   fprintf(stderr, "    <objfile> (複数)から入力し\n");
   fprintf(stderr, "    <outfile> へ出力\n");
+  fprintf(stderr, "\n");
+  fprintf(stderr, "    -h, -v  : このメッセージを表示\n");
   fprintf(stderr, "\n");
   fprintf(stderr, "%s version %s (%s 版)\n", name, VER, ARC);
   fprintf(stderr, "(build date : %s)\n", DATE);
