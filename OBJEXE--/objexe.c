@@ -275,7 +275,7 @@ void copyCode() {          // プログラムとデータをリロケートし�
 int main(int argc, char **argv){
   if (argc!=4) {                            //用法の確認
      fprintf(stderr,
-	     "Usage : %s <outfile> <objfile> <stkSiz> \n",argv[0]);
+	     "Usage : %s <exefile> <objfile> <stkSiz> \n",argv[0]);
      exit(1);
   }
 
