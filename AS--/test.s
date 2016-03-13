@@ -38,6 +38,7 @@ zzz	string  "xyz"
 
 ;; テキストセグメント
 start	no
+	ld	g0,g1		; レジスタ、レジスタ
 	ld	g0,a		; ダイレクト
 	ld	g1,b,g0  	; インデクスド
 	ld	g2,b,g1
@@ -75,6 +76,7 @@ start	no
 ;	add	g1,flag		; flag は特別
 ;	ld	flag,g1		; flag は特別
 ;; 
+;	st	g0,g1		; レジスタ、レジスタ
 	st	g2,a		; ダイレクト
 	st	g2,b,g3  	; インデクスド
 ;	st	g2,#-9		; イミディエイト
