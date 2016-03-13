@@ -28,6 +28,7 @@ d	dw	'\"'		; エスケープ+アライメント
 e	ws	2
 f	bs	5
 g	ws	5
+;	ws	5
 ;h	bs	-1
 h	bs	1
 
