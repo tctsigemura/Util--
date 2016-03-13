@@ -1,0 +1,184 @@
+% 
+% $Id$
+%
+\chapter{コマンドリファレンス}
+
+\util に含まれる５つのツールの使用方法を解説します。
+
+\section{{\as}コマンド}
+
+{\as}コマンドは{\tac}用のアセンブラです。
+{\tac}のアセンブリ言語で記述されたプログラムを
+リロケータブルオブジェクトに変換します。
+リロケータブルオブジェクトファイルの形式は、
+「付録\ref{app:oformat} \verb/.o/形式ファイル」で解説してあります。
+
+{\as}には手書きのプログラムを入力することもできますが、主に、
+{\cmm}コンパイラが出力したアセンブリ言語プログラムを
+入力することを想定しています。
+そのため、オペランドにアドレス計算式が書けない等、
+{\cmm}コンパイラが使用しない機能は省略されています。
+{\tac}アセンブリ言語の文法は「付録\ref{app:as} \as 文法まとめ」の通りです。
+
+{\as}コマンドの書式は次の通りです。
+
+\begin{flushleft}
+{\bf 形式 : }~~~\verb/as-- [-h] [-v] [<ソースプログラムファイル>]/
+\end{flushleft}
+
+\verb/-h/、\verb/-v/オプションは使用法メッセージを表示します。
+ソースプログラムファイルの拡張子は「\verb/.s/」でなければなりません。
+{\as}コマンドは拡張子が「\verb/.o/」のファイルを作成し、
+再配置可能な機械語を出力します。
+次のように実行すると、``\verb/hello.o/''ファイルが作成されます。
+
+\begin{mylist}
+\begin{verbatim}
+$ as-- hello.s
+\end{verbatim}
+\end{mylist}
+
+\section{{\ld}コマンド}
+
+{\ld}コマンドは{\tac}用のリンカープログラムです。
+「\verb/.o/形式ファイル」（\pageref{app:oformat}ページ参照）を複数入力し、
+同じ形式の一つのファイルに結合します。
+{\ld}コマンドの書式は次の通りです。
+出力ファイルは一つだけ、
+入力ファイルはいくつでも指定できます。
+
+\begin{flushleft}
+{\bf 形式 : }~~~\verb/ld-- [-h] [-v]  <出力ファイル> <入力ファイル> .../
+\end{flushleft}
+
+次のように実行すると``\verb/libtac.o/''、``\verb/hello.o/''の
+二つのファイルを結合して、``\verb/mod.o/''ファイルを作成します。
+``\verb/hello.sym/''ファイルは出力されたリロケータブルオブジェクトの
+再配置表と名前表をダンプしたファイルです。
+
+``\verb/mod.o/''ファイルもリロケータブルオブジェクトなので、
+未定義シンボルを含んでいる可能性があります。
+
+\begin{mylist}
+\begin{verbatim}
+$ ld-- mod.o /usr/local/cmmLib/libtac.o hello.o > hello.sym
+\end{verbatim}
+\end{mylist}
+
+\section{{\objexe}コマンド}
+
+{\objexe}コマンドは{\tacos}用の実行形式ファイル作成プログラムです。
+「\verb/.o/形式ファイル」（\pageref{app:oformat}ページ参照）を入力し、
+「\verb/.exe/形式ファイル」（\pageref{app:eformat}ページ参照）へ変換します。
+{\objbin}コマンドの書式は次の通りです。
+入力ファイルも出力ファイルも一つだけ指定できます。
+
+\begin{flushleft}
+{\bf 形式 : }~~~\verb/objexe-- <exefile> <objfile> <stkSiz>/
+\end{flushleft}
+
+``\verb/<exefile>/''は出力のファイル名です。
+``\verb/<objfile>/''は入力のファイル名です。
+``\verb/<stkSiz>/''には、
+アプリケーションプログラムに割り付ける
+「スタック領域サイズ＋ヒープ領域サイズ」をバイト単位の10進数で指定します。
+
+下に実行例を示します。
+\verb/mod.o/は、\ld が出力したリロケータブルオブジェクトです。
+\verb/hello.map/ファイルには、
+\verb/hello.exe/中のシンボルとアドレスの対応表がアドレス順に格納されます。
+シンボルのアドレスは、アプリケーションプログラムの先頭からの相対アドレスです。
+
+\begin{mylist}
+\begin{verbatim}
+$ objexe-- hello.exe mod.o 600 | sort --key=1 > hello.map
+\end{verbatim}
+\end{mylist}
+
+\verb/mod.o/に未解決シンボルが含まれているとエラーになります。
+次の実行例は\verb/hello.s/ファイル
+（\verb/hello.cmm/から\cmmc が変換したアセンブリ言語ソースプログラム）中に、
+未定義シンボル\verb/_printff/（\cmm ソース中では\verb/printff/）が
+含まれていてエラーになった例です。
+
+\begin{mylist}
+\begin{verbatim}
+$ objexe-- hello.exe mod.o 600 | sort --key=1 > hello.map
+_printff[hello.s]:undefined symbol
+\end{verbatim}
+\end{mylist}
+
+\section{{\objbin}コマンド}
+
+{\objbin}コマンドは{\tac}用のローダプログラムです。
+「\verb/.o/形式ファイル」（\pageref{app:oformat}ページ参照）を入力し、
+「\verb/.bin/形式ファイル」（\pageref{app:bformat}ページ参照）へ変換します。
+{\objbin}コマンドの書式は次の通りです。
+入力ファイルも出力ファイルも一つだけ指定できます。
+
+\begin{flushleft}
+{\bf 形式 : }~~~\verb/objbin--  0xTTTT <出力ファイル> <入力ファイル>  [0xBBBB]/
+\end{flushleft}
+
+\verb/0xTTTT/は16進数でテキストセグメントの先頭アドレスを指定します。
+指定した番地からテキストセグメント、データセグメントの順に配置されます。
+\verb/0xBBBB/は16進数でBSSセグメントの先頭アドレスを指定します。
+\verb/0xBBBB/は省略可能です。
+省略した場合、BSSセグメントはデータセグメントの直後に配置されます。
+
+下に実行例を示します。
+実行例の1行目は``\verb/kernel.o/''ファイルを入力し\verb/0000H/番地に配置した
+状態の機械語を作成し``\verb/kernel.bin/''ファイルに出力します。
+実行例の2行目は``\verb/ipl.o/''ファイルを入力し\verb/F800H/番地に
+テキストセグメントとデータセグメントを連続して配置し、
+\verb/FFE0H/番地に BSSセグメントを配置します。
+そして、その状態の機械語を``\verb/ipl.bin/''ファイルに出力します。
+なお、これらの例は実物のカーネルとIPLを配置する手順です。
+\verb/F800H/番地からの ROM 領域に IPL プログラム、
+\verb/FFE0H/番地からの RAM 領域に IPL のワークエリアを配置します。
+
+\begin{mylist}
+\begin{verbatim}
+$ objbin-- 0x0000 kernel.bin kernel.o | sort --key=1 > kernel.map
+$ objbin-- 0xf800 ipl.bin ipl.o 0xffe0 | sort --key=1 > ipl.map
+\end{verbatim}
+\end{mylist}
+
+{\objbin}コマンドは、固定番地に配置された完全な機械語を作成します。
+``\verb/kernel.o/''ファイルや``\verb/ipl.o/''ファイルに未定義シンボルが
+含まれていると完全な機械語に変換できないのでエラーが発生します。
+
+%次の実行例はエラーが発生する例です。
+%実行例のエラーメッセージは、
+%``\verb/kernel.s/''ファイル中で参照された \verb/_printf/
+%と言うシンボルが未定義であることを表しています。
+%
+%\begin{mylist}
+%\begin{verbatim}
+%$ objbin-- 0x0000 kernel kernel.o
+%_printf[kernel.s]:undefined symbol
+%\end{verbatim}
+%\end{mylist}
+
+\section{{\size}コマンド}
+
+{\size}コマンドは
+「\verb/.o/形式ファイル」（\pageref{app:oformat}ページ参照）を入力し、
+テキスト、データ、BSSセグメントのサイズを表示します。
+
+\begin{flushleft}
+{\bf 形式 : }~~~\verb/size--  <入力ファイル>/
+\end{flushleft}
+
+次のように実行します。
+``\verb/kernel.o/''ファイルの各セグメントと全体のサイズが
+10進数と16進数で表示されています。
+
+\begin{mylist}
+\begin{verbatim}
+$ size-- kernel.o
+text    data    bss     dec     filename
+17436     516    4386   22338   kernel.o
+(441c)  (0204)  (1122)  (5742)  (hex)
+\end{verbatim}
+\end{mylist}

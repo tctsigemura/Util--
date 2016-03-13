@@ -1,0 +1,31 @@
+% 
+% ２章 Util--のインストール
+%
+\chapter{\util のインストール}
+
+\util は\url{https://github.com/tctsigemura/Util--/}から入手します。
+インストールの準備ができたらダウンロードした配布物を解凍し
+\verb/Util--/ディレクトリで以下のように操作します。
+
+\begin{mylist}
+\begin{verbatim}
+$ make
+...
+cc -std=c99  -DDATE="\"`date`\"" -DVER=\"2.1.1\" \
+	-o as-- syntax.c lexical.c util.c
+cc -std=c99 -DDATE="\"`date`\"" -DVER=\"2.0.0\" -DARC=\"TaC\"
+  -o ld-- ld.c
+cc -std=c99 -o objbin-- objbin.c
+cc -std=c99 -o size-- size.c
+cc -std=c99 -o objexe-- objexe.c
+$ sudo make install
+...
+install -d -m 755 /usr/local/bin
+install -m 755 as-- /usr/local/bin
+...
+$
+\end{verbatim}
+\end{mylist}
+
+以上で、\as 、\ld 、\objbin 、\objexe 、\size の五つのプログラムが
+\verb;/usr/local/bin;にインストールされました。
