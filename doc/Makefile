@@ -11,4 +11,4 @@ all :
 #	open umm.pdf
 
 clean:
-	rm -f *~ umm.aux umm.dvi umm.log umm.toc umm.out
+	rm -f *~ *.aux umm.dvi umm.log umm.toc umm.out
