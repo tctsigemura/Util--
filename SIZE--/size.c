@@ -23,6 +23,7 @@
  * size.c : SIZE-- 本体
  * リロケータブル形式から text, data, bss サイズを調べて表示する
  *
+ * 2016.10.09  v.2.1.0  : .exe ファイルも扱えるように変更
  * 2012.09.12           : ファイルがオープンできない時のエラー処理追加
  * 2012.08.06  v.2.0.0  : TaC-CPU V2 対応
  * 2010.07.20           : Subversion による管理を開始
@@ -69,7 +70,8 @@ void readHdr() {
 int main(int argc, char*argv[]) {
   if (argc!=2) {
     fprintf(stderr, "使用方法 : %s <file name>\n", argv[0]);
-    fprintf(stderr, "<file name> : TaC リロケータブル形式のファイル\n");
+    fprintf(stderr, "<file name> : TaC リロケータブル形式のファイル(.o)\n");
+    fprintf(stderr, "              または、TaC 実行形式のファイル(.exe)\n");
     exit(1);
   }
 
@@ -80,8 +82,8 @@ int main(int argc, char*argv[]) {
 
   readHdr();
 
-  if (magic!=0x0107) {
-    fprintf(stderr, "マジックナンバーが 0x0107 以外\n");
+  if (magic!=0x0107 && magic!=0x0108) {
+    fprintf(stderr, "マジックナンバーが 0x0107,0x0108 以外\n");
     exit(1);
   }
 
