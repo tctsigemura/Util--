@@ -23,11 +23,12 @@
  * size.c : SIZE-- 本体
  * リロケータブル形式から text, data, bss サイズを調べて表示する
  *
- * 2016.10.09  v.2.1.0  : .exe ファイルも扱えるように変更
- * 2012.09.12           : ファイルがオープンできない時のエラー処理追加
- * 2012.08.06  v.2.0.0  : TaC-CPU V2 対応
- * 2010.07.20           : Subversion による管理を開始
- * 2009.04.20           : 作成 by T.Shigemura
+ * 2016.10.09  v3.0.0  : バージョン番号はUtil--全体で同じものを使うようにする
+ * 2016.10.09  v2.1.0  : .exe ファイルも扱えるように変更
+ * 2012.09.12          : ファイルがオープンできない時のエラー処理追加
+ * 2012.08.06  v2.0.0  : TaC-CPU V2 対応
+ * 2010.07.20          : Subversion による管理を開始
+ * 2009.04.20          : 作成 by T.Shigemura
  *
  * $Id$
  *
@@ -35,6 +36,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <string.h>
 
 int magic;                                  /* マジックナンバー             */
 int textSize;                               /* TEXT セグメントサイズ        */
@@ -67,11 +69,25 @@ void readHdr() {
   drSize=getW();                           /* Drサイズ                      */
 }
 
+// 使い方表示関数
+void usage(char *name) {
+  fprintf(stderr, "使用方法 : %s <file name>\n", name);
+  fprintf(stderr, "    <file name> : TaC リロケータブル形式のファイル(.o)\n");
+  fprintf(stderr, "                  または、TaC 実行形式のファイル(.exe)\n");
+  fprintf(stderr, "\n");
+  fprintf(stderr, "    -h, -v  : このメッセージを表示\n");
+  fprintf(stderr, "\n");
+  fprintf(stderr, "%s version %s\n", name, VER);
+  fprintf(stderr, "(build date : %s)\n", DATE);
+  fprintf(stderr, "\n");
+}
+
+// main 関数
 int main(int argc, char*argv[]) {
-  if (argc!=2) {
-    fprintf(stderr, "使用方法 : %s <file name>\n", argv[0]);
-    fprintf(stderr, "<file name> : TaC リロケータブル形式のファイル(.o)\n");
-    fprintf(stderr, "              または、TaC 実行形式のファイル(.exe)\n");
+  if (argc!=2 || (argc>1 &&
+      (strcmp(argv[1],"-v")==0 ||              //  "-v", "-h" で、使い方と
+       strcmp(argv[1],"-h")==0   ))) {         //   バージョンを表示) {
+    usage(argv[0]);
     exit(1);
   }
 
