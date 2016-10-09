@@ -271,12 +271,27 @@ void copyCode() {          // プログラムとデータをリロケートし�
   }
 }
 
-//---------------------------------メイン----------------------------------
-int main(int argc, char **argv){
-  if (argc!=4) {                            //用法の確認
-     fprintf(stderr,
-	     "Usage : %s <exefile> <objfile> <stkSiz> \n",argv[0]);
-     exit(1);
+// 使い方表示関数
+void usage(char *name) {
+  fprintf(stderr, "使用方法 : %s <exefile> <objfile> <stkSiz> \n", name);
+  fprintf(stderr, "    <objfile> 単一の .o ファイルから入力し\n");
+  fprintf(stderr, "    <exefile> へ出力\n");
+  fprintf(stderr, "    <stkSiz>  スタック＋ヒープ領域サイズ(バイト単位)\n");
+  fprintf(stderr, "\n");
+  fprintf(stderr, "    -h, -v  : このメッセージを表示\n");
+  fprintf(stderr, "\n");
+  fprintf(stderr, "%s version %s (%s 版)\n", name, VER, ARC);
+  fprintf(stderr, "(build date : %s)\n", DATE);
+  fprintf(stderr, "\n");
+}
+
+// main 関数
+int main(int argc, char **argv) {
+  if (argc!=4 || (argc>1 &&
+      (strcmp(argv[1],"-v")==0 ||              //  "-v", "-h" で、使い方と
+       strcmp(argv[1],"-h")==0   ))) {         //   バージョンを表示
+    usage(argv[0]);
+    exit(0);
   }
 
   textBase = 0x0000;                        //仮のロードアドレスを0x0000に
