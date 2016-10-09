@@ -31,7 +31,7 @@ VER=\"`cat ../VERSION`\"
 DATE="\"`date`\""
 
 objexe-- : objexe.c GNUmakefile
-	${CC} ${CFLAGS} -DDATE=${DATE} -DVER=${VER} -DARC=\"TaC\" \
+	${CC} ${CFLAGS} -DDATE=${DATE} -DVER=${VER} \
 	-o objexe-- objexe.c
 
 install : objexe--

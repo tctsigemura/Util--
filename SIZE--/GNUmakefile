@@ -32,7 +32,7 @@ VER=\"`cat ../VERSION`\"
 DATE="\"`date`\""
 
 size-- : size.c GNUmakefile
-	${CC} ${CFLAGS} -DDATE=${DATE} -DVER=${VER} -DARC=\"TaC\" \
+	${CC} ${CFLAGS} -DDATE=${DATE} -DVER=${VER} \
 	-o size-- size.c
 
 install : size--

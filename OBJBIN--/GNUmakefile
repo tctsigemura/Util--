@@ -17,7 +17,7 @@
 # る損害に関しても，その責任を負わない．
 #
 #
-# Makefile : objbin-- の makefile
+# GNUmakefile : objbin-- の makefile
 #
 # 2016.10.09  v3.0.0 : バージョン番号をUtil--で共用にする
 # 2010.07.20         : Subversion の管理に入る
@@ -32,8 +32,8 @@ all: objbin--
 VER=\"`cat ../VERSION`\"
 DATE="\"`date`\""
 
-objbin-- : objbin.c
-	${CC} ${CFLAGS} -DDATE=${DATE} -DVER=${VER} -DARC=\"TaC\" \
+objbin-- : objbin.c GNUmakefile
+	${CC} ${CFLAGS} -DDATE=${DATE} -DVER=${VER} \
 	-o objbin-- objbin.c
 
 install : objbin--

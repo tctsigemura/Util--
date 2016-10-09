@@ -11,18 +11,28 @@
 \begin{verbatim}
 $ make
 ...
-cc -std=c99  -DDATE="\"`date`\"" -DVER=\"2.1.1\" \
-	-o as-- syntax.c lexical.c util.c
-cc -std=c99 -DDATE="\"`date`\"" -DVER=\"2.0.0\" -DARC=\"TaC\"
-  -o ld-- ld.c
-cc -std=c99 -o objbin-- objbin.c
-cc -std=c99 -o size-- size.c
-cc -std=c99 -o objexe-- objexe.c
+cc -std=c99  -DDATE="\"`date`\"" -DVER=\"`cat ../VERSION`\" \
+    -o as-- syntax.c lexical.c util.c
+cc -std=c99  -DDATE="\"`date`\"" -DVER=\"`cat ../VERSION`\" \
+    -o ld-- ld.c
+cc -std=c99  -DDATE="\"`date`\"" -DVER=\"`cat ../VERSION`\" \
+    -o objbin-- objbin.c
+cc -std=c99  -DDATE="\"`date`\"" -DVER=\"`cat ../VERSION`\" \
+    -o size-- size.c
+cc -std=c99  -DDATE="\"`date`\"" -DVER=\"`cat ../VERSION`\" \
+    -o objexe-- objexe.c
 $ sudo make install
 ...
 install -d -m 755 /usr/local/bin
 install -m 755 as-- /usr/local/bin
-...
+install -d -m 755 /usr/local/bin
+install -m 755 ld-- /usr/local/bin
+install -d -m 755 /usr/local/bin
+install -m 755 objbin-- /usr/local/bin
+install -d -m 755 /usr/local/bin
+install -m 755 size-- /usr/local/bin
+install -d -m 755 /usr/local/bin
+install -m 755 objexe-- /usr/local/bin
 $
 \end{verbatim}
 \end{mylist}

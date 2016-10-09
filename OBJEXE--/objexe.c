@@ -280,7 +280,7 @@ void usage(char *name) {
   fprintf(stderr, "\n");
   fprintf(stderr, "    -h, -v  : このメッセージを表示\n");
   fprintf(stderr, "\n");
-  fprintf(stderr, "%s version %s (%s 版)\n", name, VER, ARC);
+  fprintf(stderr, "%s version %s\n", name, VER);
   fprintf(stderr, "(build date : %s)\n", DATE);
   fprintf(stderr, "\n");
 }

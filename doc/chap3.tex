@@ -48,7 +48,7 @@ $ as-- hello.s
 入力ファイルはいくつでも指定できます。
 
 \begin{flushleft}
-{\bf 形式 : }~~~\verb/ld-- [-h] [-v]  <出力ファイル> <入力ファイル> .../
+{\bf 形式 : }~~~\verb/ld-- [-h] [-v] <出力ファイル> <入力ファイル> .../
 \end{flushleft}
 
 次のように実行すると``\verb/libtac.o/''、``\verb/hello.o/''の
@@ -74,7 +74,7 @@ $ ld-- mod.o /usr/local/cmmLib/libtac.o hello.o > hello.sym
 入力ファイルも出力ファイルも一つだけ指定できます。
 
 \begin{flushleft}
-{\bf 形式 : }~~~\verb/objexe-- <exefile> <objfile> <stkSiz>/
+{\bf 形式 : }~~~\verb/objexe-- [-h] [-v] <exefile> <objfile> <stkSiz>/
 \end{flushleft}
 
 ``\verb/<exefile>/''は出力のファイル名です。
@@ -118,7 +118,7 @@ _printff[hello.s]:undefined symbol
 入力ファイルも出力ファイルも一つだけ指定できます。
 
 \begin{flushleft}
-{\bf 形式 : }~~~\verb/objbin--  0xTTTT <出力ファイル> <入力ファイル>  [0xBBBB]/
+{\bf 形式 : }~~~\verb/objbin-- [-h] [-v] 0xTTTT <出力ファイル> <入力ファイル> [0xBBBB]/
 \end{flushleft}
 
 \verb/0xTTTT/は16進数でテキストセグメントの先頭アドレスを指定します。
@@ -169,7 +169,7 @@ $ objbin-- 0xf000 ipl.bin ipl.o 0xda00 | sort --key=1 > ipl.map
 テキスト、データ、BSSセグメントのサイズを表示します。
 
 \begin{flushleft}
-{\bf 形式 : }~~~\verb/size--  <入力ファイル>/
+{\bf 形式 : }~~~\verb/size-- [-h] [-v] <入力ファイル>/
 \end{flushleft}
 
 次のように実行します。

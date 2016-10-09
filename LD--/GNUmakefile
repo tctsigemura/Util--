@@ -36,8 +36,9 @@ DATE="\"`date`\""
 
 all: ld--
 
-ld-- : ld.c Makefile
-	${CC} ${CFLAGS} -DDATE=${DATE} -DVER=${VER} -DARC=\"TaC\" -o ld-- ld.c
+ld-- : ld.c GNUmakefile
+	${CC} ${CFLAGS} -DDATE=${DATE} -DVER=${VER} \
+	-o ld-- ld.c
 
 install: ld--
 	install -d -m 755 /usr/local/bin
