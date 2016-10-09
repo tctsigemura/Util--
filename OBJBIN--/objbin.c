@@ -23,6 +23,7 @@
  * objbin.c : OBJBIN-- 本体
  * リロケータブルオブジェクトをメモリイメージに変換する
  *
+ * 2016.10.09 v.3.0.0   : バージョン番号等を表示するように改良
  * 2016.01.07           : C-Lang の -Wlogical-op-parentheses 警告に対応
  * 2012.09.25           : 標準出力にメモリマップを書き出す
  * 2012.08.05  v.2.0.0  : TaC-CPU V2 に対応
@@ -291,15 +292,26 @@ int hToInt(char *hstr) {
   return x;
 }
 
-int main(int argc, char **argv) {
-  if (argc!=4 && argc!=5) {
-     fprintf(stderr,
-	     "Usage : %s 0xTTTT <outfile> <objfile> [0xBBBB]\n"
-	     "  0xTTTT : Text , Data segment address\n"
-	     "  0xBBBB : BSS segment address\n",
-	     argv[0]);
+// 使い方表示関数
+void usage(char *name) {
+  fprintf(stderr, "使用方法 : %s 0xTTTT <outfile> <objfile> [0xBBBB]\n", name);
+  fprintf(stderr, "    0xTTTT : Text , Data segment address\n");
+  fprintf(stderr, "    0xBBBB : BSS segment address\n");
+  fprintf(stderr, "\n");
+  fprintf(stderr, "    -h, -v  : このメッセージを表示\n");
+  fprintf(stderr, "\n");
+  fprintf(stderr, "%s version %s (%s 版)\n", name, VER, ARC);
+  fprintf(stderr, "(build date : %s)\n", DATE);
+  fprintf(stderr, "\n");
+}
 
-     exit(1);
+// main 関数
+int main(int argc, char **argv) {
+  if ((argc!=4 && argc!=5) || (argc>1 &&
+      (strcmp(argv[1],"-v")==0 ||              //  "-v", "-h" で、使い方と
+       strcmp(argv[1],"-h")==0   ))) {         //   バージョンを表示
+    usage(argv[0]);
+    exit(0);
   }
 
   textBase = hToInt(argv[1]);

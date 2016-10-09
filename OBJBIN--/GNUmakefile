@@ -2,7 +2,7 @@
 # TaC objbin utility Source Code
 #    Tokuyama kousen Educational Computer 16 bit Version
 #
-# Copyright (C) 2008-2010 by
+# Copyright (C) 2008-2016 by
 #                      Dept. of Computer Science and Electronic Engineering,
 #                      Tokuyama College of Technology, JAPAN
 #
@@ -17,8 +17,9 @@
 # る損害に関しても，その責任を負わない．
 #
 #
-# Makefile : サンプルプログラム 8Queen の makefile
+# Makefile : objbin-- の makefile
 #
+# 2016.10.09  v3.0.0 : バージョン番号をUtil--で共用にする
 # 2010.07.20         : Subversion の管理に入る
 # 2010.04.09  v0.6.3 : install のオプションから -g wheel を削除(Ubuntu対応)
 # 2008.07.18         : 初期バージョン
@@ -28,9 +29,12 @@
 
 CC=cc -std=c99
 all: objbin--
+VER=\"`cat ../VERSION`\"
+DATE="\"`date`\""
 
 objbin-- : objbin.c
-	${CC} ${CFLAGS} -o objbin-- objbin.c
+	${CC} ${CFLAGS} -DDATE=${DATE} -DVER=${VER} -DARC=\"TaC\" \
+	-o objbin-- objbin.c
 
 install : objbin--
 	install -d -m 755 /usr/local/bin
