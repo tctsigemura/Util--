@@ -24,6 +24,8 @@
 // 実行可能プログラム（.exeファイル）を出力する
 
 /*
+ * 2016.12/28  : EXEファイルのマジック番号を、コマンドラインから与えられた
+ *               モードに変更できるように修正
  * 2016.01.07  : Util-- に収録（統合）
  * 2015.06.10  : __endの定義を追加
  *               (__endは元々再配置対象になっている、再配置表に登録不要）
@@ -64,7 +66,7 @@ struct Exe_head {
   int magic;                                //マジック番号
   int text;                                 //Textサイズ
   int data;                                 //Dataサイズ
-  int bss;                                  //BSS　サイズ
+  int bss;                                  //BSSサイズ
   int rel;                                  //再配置情報のサイズ
   int stkSiz;                               //ユーザモード用スタックサイズ
 };
@@ -273,10 +275,11 @@ void copyCode() {          // プログラムとデータをリロケートし�
 
 // 使い方表示関数
 void usage(char *name) {
-  fprintf(stderr, "使用方法 : %s <exefile> <objfile> <stkSiz> \n", name);
+  fprintf(stderr, "使用方法 : %s <exefile> <objfile> <stkSiz> <exeMode> \n", name);
   fprintf(stderr, "    <objfile> 単一の .o ファイルから入力し\n");
   fprintf(stderr, "    <exefile> へ出力\n");
   fprintf(stderr, "    <stkSiz>  スタック＋ヒープ領域サイズ(バイト単位)\n");
+  fprintf(stderr, "    <exeMode> アプリケーションの実行モードを指定（USER,KERN）\n");
   fprintf(stderr, "\n");
   fprintf(stderr, "    -h, -v  : このメッセージを表示\n");
   fprintf(stderr, "\n");
@@ -287,10 +290,12 @@ void usage(char *name) {
 
 // main 関数
 int main(int argc, char **argv) {
-  if (argc!=4 || (argc>1 &&
+  if (argc!=5 || (argc>1 &&
       (strcmp(argv[1],"-v")==0 ||              //  "-v", "-h" で、使い方と
-       strcmp(argv[1],"-h")==0   ))) {         //   バージョンを表示
-    usage(argv[0]);
+       strcmp(argv[1],"-h")==0   )) ||
+      (strcmp(argv[4],"KERN")!=0 &&
+       strcmp(argv[4],"USER")!=0)) {
+    usage(argv[0]);                            //   バージョンを表示
     exit(0);
   }
 
@@ -315,7 +320,10 @@ int main(int argc, char **argv) {
   //EXEファイル出力部
 
   // ヘッダ出力
-  putW(0x108);                              // マジック番号
+  if (strcmp(argv[4],"KERN")==0)            // マジック番号
+    putW(0x109);                            //（実行モード：カーネルモード）
+  else
+    putW(0x108);                            //（実行モード：ユーザモード）
   putW(textSize);                           // Textサイズ (ヘッダ情報のまま)
   putW(dataSize);                           // Dataサイズ (ヘッダ情報のまま)
   putW(bssSize);                            // BSS サイズ (ヘッダ情報のまま)
