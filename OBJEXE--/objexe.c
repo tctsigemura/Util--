@@ -2,7 +2,7 @@
  * TaC-OS Source Code
  *    Tokuyama kousen Advanced educational Computer.
  *
- * Copyright (C) 2011 - 2016 by
+ * Copyright (C) 2011 - 2017 by
  *                      Dept. of Computer Science and Electronic Engineering,
  *                      Tokuyama College of Technology, JAPAN
  *
@@ -24,6 +24,7 @@
 // 実行可能プログラム（.exeファイル）を出力する
 
 /*
+ * 2017.01.11  : 実行モードの種類を変更（KERN 廃止、IOPR 追加）
  * 2016.12/28  : EXEファイルのマジック番号を、コマンドラインから与えられた
  *               モードに変更できるように修正
  * 2016.01.07  : Util-- に収録（統合）
@@ -279,7 +280,7 @@ void usage(char *name) {
   fprintf(stderr, "    <objfile> 単一の .o ファイルから入力し\n");
   fprintf(stderr, "    <exefile> へ出力\n");
   fprintf(stderr, "    <stkSiz>  スタック＋ヒープ領域サイズ(バイト単位)\n");
-  fprintf(stderr, "    <exeMode> アプリケーションの実行モードを指定（USER,KERN）\n");
+  fprintf(stderr, "    <exeMode> アプリケーションの実行モードを指定（USER,IOPR）\n");
   fprintf(stderr, "\n");
   fprintf(stderr, "    -h, -v  : このメッセージを表示\n");
   fprintf(stderr, "\n");
@@ -293,7 +294,7 @@ int main(int argc, char **argv) {
   if (argc!=5 || (argc>1 &&
       (strcmp(argv[1],"-v")==0 ||              //  "-v", "-h" で、使い方と
        strcmp(argv[1],"-h")==0   )) ||
-      (strcmp(argv[4],"KERN")!=0 &&
+      (strcmp(argv[4],"IOPR")!=0 &&
        strcmp(argv[4],"USER")!=0)) {
     usage(argv[0]);                            //   バージョンを表示
     exit(0);
@@ -320,8 +321,8 @@ int main(int argc, char **argv) {
   //EXEファイル出力部
 
   // ヘッダ出力
-  if (strcmp(argv[4],"KERN")==0)            // マジック番号
-    putW(0x109);                            //（実行モード：カーネルモード）
+  if (strcmp(argv[4],"IOPR")==0)            // マジック番号
+    putW(0x109);                            //（実行モード：IO特権モード）
   else
     putW(0x108);                            //（実行モード：ユーザモード）
   putW(textSize);                           // Textサイズ (ヘッダ情報のまま)
