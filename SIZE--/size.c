@@ -2,7 +2,7 @@
  * TaC size utility Source Code
  *    Tokuyama kousen Educational Computer 16bit Ver.
  *
- * Copyright (C) 2009-2016 by
+ * Copyright (C) 2009-2017 by
  *                      Dept. of Computer Science and Electronic Engineering,
  *                      Tokuyama College of Technology, JAPAN
  *
@@ -23,6 +23,7 @@
  * size.c : SIZE-- 本体
  * リロケータブル形式から text, data, bss サイズを調べて表示する
  *
+ * 2017.01.11          : .exeファイルの実行モードによるマジックナンバーに対応
  * 2016.10.09  v3.0.0  : バージョン番号はUtil--全体で同じものを使うようにする
  * 2016.10.09  v2.1.0  : .exe ファイルも扱えるように変更
  * 2012.09.12          : ファイルがオープンできない時のエラー処理追加
@@ -98,8 +99,8 @@ int main(int argc, char*argv[]) {
 
   readHdr();
 
-  if (magic!=0x0107 && magic!=0x0108) {
-    fprintf(stderr, "マジックナンバーが 0x0107,0x0108 以外\n");
+  if (magic!=0x0107 && magic!=0x0108 && magic!=0x0109) {
+    fprintf(stderr, "マジックナンバーが 0x0107,0x0108,0x0109 以外\n");
     exit(1);
   }
 
