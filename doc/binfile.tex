@@ -211,6 +211,7 @@ struct ExeHdr {
   uint data;      // 初期化データセグメントサイズ(バイト単位)
   uint bss;       // 非初期化データセグメント(BSS)サイズ(バイト単位)
   uint rsize;     // リロケーションサイズ(ワード単位)
+  uint stksize;   // プロセスのユーザスタックサイズ
 };
 \end{verbatim}
 \end{mylist}
