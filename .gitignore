@@ -1,0 +1,10 @@
+.DS_Store
+*~
+*.exe
+*.map
+*.o
+*.lst
+*.sym
+*.dSYM
+*.bin
+

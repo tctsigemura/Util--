@@ -2,7 +2,7 @@
  * TaC-OS Source Code
  *    Tokuyama kousen Advanced educational Computer.
  *
- * Copyright (C) 2011 - 2017 by
+ * Copyright (C) 2011 - 2019 by
  *                      Dept. of Computer Science and Electronic Engineering,
  *                      Tokuyama College of Technology, JAPAN
  *
@@ -24,6 +24,8 @@
 // 実行可能プログラム（.exeファイル）を出力する
 
 /*
+ *
+ * 2017.01.1i  : IOPR を -P オプションに変更
  * 2017.01.11  : 実行モードの種類を変更（KERN 廃止、IOPR 追加）
  * 2016.12/28  : EXEファイルのマジック番号を、コマンドラインから与えられた
  *               モードに変更できるように修正
@@ -33,9 +35,9 @@
  * 2015.06.04  : EXEファイルのヘッダに、コマンドラインから与えられた
  *               スタックサイズを書き加えるように変更
  * 2015.05.14  : TaCでは1Word=2Byteのため、再配置情報のサイズをrelIdx * 2に変更
- * 2014.12.09　: _endの決定を削除、EXEファイルフォーマットの出力に変更、
+ * 2014.12.09  : _endの決定を削除、EXEファイルフォーマットの出力に変更、
  *               objexe使用法変更
- * 2014.12.03　: objbin.cをベースに開発開始
+ * 2014.12.03  : objbin.cをベースに開発開始
  *
  */
 
@@ -46,30 +48,30 @@
 #define boolean int
 #define true     1
 #define false    0
-#define HDRSIZ   16                         //.oファイルのヘッダは16byte
-#define MAGIC    0x0107                     //.oファイルのマジック番号
-#define WORD     2                          //1ワード2byte
+#define HDRSIZ   16                           // .oファイルのヘッダは16byte
+#define MAGIC    0x0107                       // .oファイルのマジック番号
+#define WORD     2                            // 1ワード2byte
 
-int textBase;                               //入力ファイルの
-int dataBase;                               //　各セグメントの
-int bssBase;                                //　　ロードアドレス
+int textBase;                                 // 入力ファイルの
+int dataBase;                                 // 各セグメントの
+int bssBase;                                  // ロードアドレス
 
-int textSize;                               //入力ファイルのTEXTサイズ
-int dataSize;                               //入力ファイルのDATAサイズ
-int bssSize;                                //入力ファイルのBSS サイズ
-int symSize;                                //入力ファイルのSYMSサイズ
-int trSize;                                 //入力ファイルのTr  サイズ
-int drSize;                                 //入力ファイルのDr  サイズ
+int textSize;                                 // 入力ファイルのTEXTサイズ
+int dataSize;                                 // 入力ファイルのDATAサイズ
+int bssSize;                                  // 入力ファイルのBSS サイズ
+int symSize;                                  // 入力ファイルのSYMSサイズ
+int trSize;                                   // 入力ファイルのTr  サイズ
+int drSize;                                   // 入力ファイルのDr  サイズ
 
 /*
 //EXEファイルのヘッダ
 struct Exe_head {
-  int magic;                                //マジック番号
-  int text;                                 //Textサイズ
-  int data;                                 //Dataサイズ
-  int bss;                                  //BSSサイズ
-  int rel;                                  //再配置情報のサイズ
-  int stkSiz;                               //ユーザモード用スタックサイズ
+  int magic;                                  // マジック番号
+  int text;                                   // Textサイズ
+  int data;                                   // Dataサイズ
+  int bss;                                    // BSSサイズ
+  int rel;                                    // 再配置情報のサイズ
+  int stkSiz;                                 // ユーザモード用スタックサイズ
 };
 */
 
@@ -79,19 +81,19 @@ void error(char *str) {
 }
 
 //----------------------------- ファイル関係---------------------------------
-FILE* out;                                   // 出力ファイル
-FILE* in;                                    // 入力ファイル
-char *fileName;                              // 入力ファイルの名前
+FILE* out;                                    // 出力ファイル
+FILE* in;                                     // 入力ファイル
+char *fileName;                               // 入力ファイルの名前
 
 #define getB()   fgetc(in)
 #define putB(c)  fputc(c,out);
 
-void fError(char *str) {                     // 入力ファイルでエラー発生時使用
+void fError(char *str) {                      // 入力ファイルでエラー発生時使用
   perror(fileName);
   error(str);
 }
 
-void xOpen(char *fname) {                    // 入力ファイルの open
+void xOpen(char *fname) {                     // 入力ファイルの open
   fileName = fname;
   if ((in = fopen(fname, "rb"))==NULL)
     fError("can't open");
@@ -276,12 +278,12 @@ void copyCode() {          // プログラムとデータをリロケートし�
 
 // 使い方表示関数
 void usage(char *name) {
-  fprintf(stderr, "使用方法 : %s <exefile> <objfile> <stkSiz> <exeMode> \n", name);
+  fprintf(stderr, "使用方法 : %s [-Phv] <exefile> <objfile> <stkSiz>\n", name);
   fprintf(stderr, "    <objfile> 単一の .o ファイルから入力し\n");
   fprintf(stderr, "    <exefile> へ出力\n");
   fprintf(stderr, "    <stkSiz>  スタック＋ヒープ領域サイズ(バイト単位)\n");
-  fprintf(stderr, "    <exeMode> アプリケーションの実行モードを指定（USER,IOPR）\n");
   fprintf(stderr, "\n");
+  fprintf(stderr, "    -P      : I/O 特権モードの exe ファイルを作る\n");
   fprintf(stderr, "    -h, -v  : このメッセージを表示\n");
   fprintf(stderr, "\n");
   fprintf(stderr, "%s version %s\n", name, VER);
@@ -291,52 +293,62 @@ void usage(char *name) {
 
 // main 関数
 int main(int argc, char **argv) {
-  if (argc!=5 || (argc>1 &&
-      (strcmp(argv[1],"-v")==0 ||              //  "-v", "-h" で、使い方と
-       strcmp(argv[1],"-h")==0   )) ||
-      (strcmp(argv[4],"IOPR")!=0 &&
-       strcmp(argv[4],"USER")!=0)) {
-    usage(argv[0]);                            //   バージョンを表示
+  if (argc>1 && (strcmp(argv[1],"-v")==0 ||   // "-v",
+		 strcmp(argv[1],"-h")==0)) {  // "-h" で、
+    usage(argv[0]);                           // 使い方とバージョンを表示
     exit(0);
   }
 
-  textBase = 0x0000;                        //仮のロードアドレスを0x0000に
+  boolean iop = false;                        // I/O 特権モード
+  int i = 1;                                  // コマンド行引数の位置
+  int magic = 0x108;                          // exe ファイルのジック番号
+  if (argc>1 && strcmp(argv[i],"-P")==0) {    // I/O 特権モードのオプション
+    iop = true;
+    magic = 0x109;                            // I/O 特権モードのマジック番号
+    i = i + 1;
+    argc = argc - 1;
+  }
 
-  if ((out = fopen(argv[1],"wb"))==NULL) {  // 出力ファイルオープン
-    perror(argv[1]);
+  if (argc!=4) {
+    usage(argv[0]);                           // 使い方とバージョンを表示
+    exit(0);
+  }
+
+  textBase = 0x0000;                          // 仮のロードアドレスを0x0000に
+
+  if ((out = fopen(argv[i],"wb"))==NULL) {    // 出力ファイルオープン
+    perror(argv[i]);
     exit(1);
   }
 
-  xOpen(argv[2]);                           // 入力ファイルオープン
-  readHdr();                                // ヘッダを読み込む
-  dataBase = textBase + textSize;           // DATAセグメントのアドレスを決める
-  bssBase  = dataBase + dataSize;           // BSSセグメントのアドレスを決める
-  readStrTbl();                             // 文字列表を読み込む
-  fclose(in);                               // EOFに達したオープンしなおし
+  xOpen(argv[i+1]);                           // 入力ファイルオープン
+  readHdr();                                  // ヘッダを読み込む
+  dataBase = textBase + textSize;             // DATAセグメントのアドレスを決め
+  bssBase  = dataBase + dataSize;             // BSSセグメントのアドレスを決め
+  readStrTbl();                               // 文字列表を読み込む
+  fclose(in);                                 // EOFに達したオープンしなおし
 
-  xOpen(argv[2]);                           // 入力ファイルオープン
-  readSymTbl();                             // 名前表を読み込む
-  readRelTbl();                             // 再配置表を読み込む
+  xOpen(argv[i+1]);                           // 入力ファイルオープン
+  readSymTbl();                               // 名前表を読み込む
+  readRelTbl();                               // 再配置表を読み込む
 
   //EXEファイル出力部
 
   // ヘッダ出力
-  if (strcmp(argv[4],"IOPR")==0)            // マジック番号
-    putW(0x109);                            //（実行モード：IO特権モード）
-  else
-    putW(0x108);                            //（実行モード：ユーザモード）
-  putW(textSize);                           // Textサイズ (ヘッダ情報のまま)
-  putW(dataSize);                           // Dataサイズ (ヘッダ情報のまま)
-  putW(bssSize);                            // BSS サイズ (ヘッダ情報のまま)
-  putW(relIdx * 2);                         // 再配置情報サイズ(1Word=2Byte)
-  putW(atoi(argv[3]));                      // ユーザモード時のスタックサイズ
+  putW(magic);                                // マジック番号を出力
+  putW(textSize);                             // Textサイズ (ヘッダ情報のまま)
+  putW(dataSize);                             // Dataサイズ (ヘッダ情報のまま)
+  putW(bssSize);                              // BSS サイズ (ヘッダ情報のまま)
+  putW(relIdx * 2);                           // 再配置情報サイズ(1Word=2Byte)
+  putW(atoi(argv[i+2]));                      // ユーザモード時のスタックサイズ
 
   // プログラム本体出力
-  copyCode();                               // TEXT、DATAを出力
+  copyCode();                                 // TEXT、DATAを出力
 
   //再配置情報の出力
-  for(int i=0; i<relIdx; i=i+1)             // 再配置表の全てのレコードについて
-    putW(relTbl[i].addr);                   // 再配置対象アドレスを出力
+  for(int i=0; i<relIdx; i=i+1) {            // 再配置表の全レコードについて
+    putW(relTbl[i].addr);                    // 再配置対象アドレスを出力
+  }
 
   fclose(in);
   fclose(out);
