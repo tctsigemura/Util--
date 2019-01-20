@@ -7,4 +7,9 @@
 *.sym
 *.dSYM
 *.bin
+*.aux
+*.dvi
+*.log
+*.out
+*.toc
 

@@ -1,6 +1,7 @@
 %
 % Util-- の解説書
 %
+% 2019.01.20         : objexe-- の -P オプション追加
 % 2018.09.09         : .exe 形式ヘッダのバグ訂正
 % 2016.10.09         : バージョン番号をUtil--全体で共通化
 % 2016.10.09         : size-- が .exe を扱えるようになる
@@ -59,7 +60,7 @@
 %----------------------------------------------------------------------
 \newcommand{\figref}[1]{図~\ref{fig:#1}}
 \newcommand{\tabref}[1]{表~\ref{tab:#1}}
-\newcommand{\ver}{Ver. 3.0.1}
+\newcommand{\ver}{Ver. 3.0.2}
 \newcommand{\cmm}{{\tt C--}}
 \newcommand{\cmmc}{{\tt c--}}
 \newcommand{\cmml}{\cmm 言語}
@@ -116,7 +117,7 @@
 ~
 \vfill
 \begin{flushleft}
-Copyright \copyright ~~ 2016 by \\
+Copyright \copyright ~~ 2016 - 2019 by \\
 Dept. of Computer Science and Electronic Engineering, \\
 Tokuyama College of Technology, JAPAN
 \end{flushleft}
@@ -149,6 +150,8 @@ Tokuyama College of Technology, JAPAN
 ~
 \subsubsection{変更履歴}
 \begin{flushleft}
+2019年01年20日 {\objexe} の \verb/-P/ オプション追加 \\
+2019年01年20日 .exe ファイルの解説にI/O特権追記 \\
 2016年10月09日 {\size}の仕様変更、{\util}全体でバージョン番号統一  \\
 2016年03月13日 初期バージョン  \\
 \end{flushleft}
@@ -167,7 +170,7 @@ Tokuyama College of Technology, JAPAN
 \fbox{\parbox{10cm}{ \vspace{0.3cm}
 \large{\bf \util 解説書} \
 \\
-　発行年月　２０１８年０９月　\ver \\
+　発行年月　２０１９年０１月　\ver \\
 　発　　行　独立行政法人国立高等専門学校機構 \\
 　　　　　　徳山工業高等専門学校 \\
 　　　　　　情報電子工学科　重村哲至 \\
