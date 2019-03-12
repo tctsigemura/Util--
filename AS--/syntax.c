@@ -2,7 +2,7 @@
  * TaC Assembler Source Code
  *    Tokuyama kousen Educational Computer 16bit Ver.
  *
- * Copyright (C) 2008-2016 by
+ * Copyright (C) 2008-2019 by
  *                      Dept. of Computer Science and Electronic Engineering,
  *                      Tokuyama College of Technology, JAPAN
  *
@@ -22,6 +22,7 @@
 /*
  * syntax.c : AS--の構文解析ルーチン
  *
+ * 2019.03.12           : ソースファイル名をパス名でも扱えるように改良
  * 2016.10.09  v3.0.0   : バージョン番号はUtil--全体で同じものを使うようにする
  * 2016.02.05  v2.1.1   : 先に BSS に置かれたものが、
  *                        後で DATA になると２重定義のエラーになるバグ訂正
@@ -713,7 +714,7 @@ void pass4() {                  // pass4は、DB,DW命令だけ処理する
   ln = -1;                      // 以後、エラーが発生してもリストは表示しない
 }
 
-#define MAX_FNAME 30
+#define MAX_PATH 30
 
 // 使い方表示関数
 void usage(char *name) {
@@ -743,37 +744,40 @@ int main(int argc, char **argv) {
     exit(1);
   }
 
-  char fileName[MAX_FNAME+3];
-  int  flen;
-  fileName[0] = '@';              // 名前表に登録するファイル名は"@"で始まる
-  for (flen=0; argv[1][flen]!='\0' && argv[1][flen]!='.'; flen=flen+1) {
-    if (flen>=MAX_FNAME-6) error("ファイル名が長すぎる");
-    fileName[flen+1] = argv[1][flen];
+  int e = strlen(argv[1]);                     // パス名の最後
+  int d = e - 1;                               // ファイル名と拡張子の境界
+  while (d>=0 && argv[1][d]!='.') {
+    d = d - 1;
   }
-
-  if (argv[1][flen]!='.' || argv[1][flen+1]!='s' || argv[1][flen+2]!='\0')
+  if (e-d!=2 || argv[1][d]!='.' || argv[1][d+1]!='s' || argv[1][d+2]!='\0')
     error("ファイル名の拡張子は '.s' でなければならない");
 
-  if ((in = fopen(argv[1],"r"))==NULL) {       // ソースファイルオープン
-    perror(argv[1]);
+  int  f = d - 1;                              // ファイル名の先頭
+  while (f>=0 && argv[1][f]!='/') {
+    f = f - 1;
+  }
+  f = f + 1;
+
+  char filePath[MAX_PATH+3];
+  if (e>MAX_PATH) error("パス名が長すぎる");
+  strcpy(filePath, argv[1]);
+
+  if ((in = fopen(filePath,"r"))==NULL) {      // ソースファイルオープン
+    perror(filePath);
     exit(1);
   }
 
-  flen = flen + 1;
-  fileName[flen]   = '.';
-  fileName[flen+1] = 'o';                      // オブジェクトファイルの
-  fileName[flen+2] = '\0';                     // 拡張子は '.o'
-  if ((out=fopen(fileName+1,"wb"))==NULL) {    // オブジェクトファイルオープン
-    perror(fileName);
+  filePath[d] = '\0';
+  strcat(filePath, ".o");                      // 拡張子は '.o'
+  if ((out=fopen(filePath,"wb"))==NULL) {      // オブジェクトファイルオープン
+    perror(filePath);
     exit(1);
   }
 
-  fileName[flen+1] = 'l';                      // リストファイルの
-  fileName[flen+2] = 's';                      // 拡張子は '.lst'
-  fileName[flen+3] = 't';
-  fileName[flen+4] = '\0';
-  if ((lst = fopen(fileName+1,"w"))==NULL) {   // リストファイルオープン
-    perror(fileName);
+  filePath[d] = '\0';
+  strcat(filePath, ".lst");                    // 拡張子は '.o'
+  if ((lst = fopen(filePath,"w"))==NULL) {     // リストファイルオープン
+    perror(filePath);
     exit(1);
   }
 
@@ -782,9 +786,9 @@ int main(int argc, char **argv) {
   pass0();                                     // ラベル表(symTbl)にEQUを登録
   equIdx = symIdx;                             // これ以前はEQUラベル
 
-  fileName[flen+1]   = 's';
-  fileName[flen+2]   = '\0';
-  int n = addName(fileName);                   // 名前表にファイル名を登録
+  strcpy(filePath, "@");                       // 名前表に登録する
+  strcat(filePath, argv[1]+f);                 //  ファイル名は"@"で始まる
+  int n = addName(filePath);                   // 名前表にファイル名を登録
   symTbl[n].type = SYMTEXT;
 
   fprintf(lst, "\n*** BSSセグメント ***\n");
