@@ -56,8 +56,8 @@ start	no
 	ld	fp,b,g12
 	ld	sp,b,fp
 	ld	usp,b,sp
-	ld	pc,b,usp
-	ld	g1,b,pc
+	ld	flag,b,usp
+	ld	g1,b,flag
 	ld	g1,#-9		; イミディエイト
 	ld	g1,#65527	; = -9
 	ld	g1,#-8
@@ -73,7 +73,7 @@ start	no
 	ld	g1,%g2		; インダイレクト
 	ld	g1,0,g2		; インダイレクトと同じ
 	ld	g1,@g2		; バイトインダイレクト
-	ld	g1,flag		; flag は特別
+	ld	g1,flag
 ;	add	g1,flag		; flag は特別
 ;	ld	flag,g1		; flag は特別
 ;; 
@@ -104,13 +104,9 @@ start	no
 	mul	g9,g10
 	div	g11,g12
 	mod	g12,fp
-	mull	g10,g1
-;	mull	g11,g10
-	divl	g12,g2
-;	divl	sp,g10
 	shla	sp,usp
-	shll	usp,pc
-	shra	pc,g0
+	shll	usp,flag
+	shra	flag,g0
 	shrl	g0,g1
 ;	shla	g1,#0
 	shla	g1,#8
@@ -121,22 +117,21 @@ start	no
 ;;
 loop	jz	loop
 	jc	loop,g1
-	jm	%g2
-	jm	0,g2
-	jo	%g3
-;	jgt	@g4
-	jgt	%g4
-	jge	%g5
-	jle	%g6
-	jlt	%g7
-	jnz	%g8
-	jnc	%g9
-	jnm	%g10
-	jno	%g11
-	jhi	%fp
-	jls	%sp
-	jmp	%usp
+	jm	loop
+	jo	loop
+	jgt	loop
+	jge	loop
+	jle	loop
+	jlt	loop
+	jnz	loop
+	jnc	loop
+	jnm	loop
+	jno	loop
+	jhi	loop
+	jls	loop
+	jmp	loop
 	call	printf
+	call	printf,flag
 end
 	in	g0,012
 	in	g1,%g1
@@ -147,12 +142,10 @@ end
 	out	g1 ,g5
 	out	g0,@g7
 	push	g0
-	push	pc
-	pop	pc
+	push	flag
+	pop	flag
 	pop	g0
 	ret
 	reti
-	ei
-	di
 	svc
 	halt
