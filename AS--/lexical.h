@@ -114,8 +114,6 @@
 #define STRING   0x1301
 #define NAME     0x1302
 
-#define PC     0x1400  // PC は一般のレジスタとは別の扱いにする
-
 #define MAX_NAME 127                    // 名前の長さの上限 ### 将来見直し ###
 
 int  ln;                                // 行番号

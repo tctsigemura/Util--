@@ -22,7 +22,7 @@
 /*
  * syntax.c : AS--の構文解析ルーチン
  *
- * 2021.10.14  v4.0.0   : TaC-CPU V3 に対応
+ * 2021.10.14  v3.1.0   : TaC-CPU V3 に対応
  * 2019.03.12           : ソースファイル名をパス名でも扱えるように改良
  * 2016.10.09  v3.0.0   : バージョン番号はUtil--全体で同じものを使うようにする
  * 2016.02.05  v2.1.1   : 先に BSS に置かれたものが、
@@ -626,7 +626,7 @@ void pass2() {                  // pass2は、機械語命令だけ処理する
 	int mode =amode();
 	if (type==M5 && (mode==REG||mode==IMMD||mode==SIMMD))
 	  error("ST命令で使用できないアドレッシングモード");
-	if (type==M6 && mode!=DRCT && mode!=INDX)
+	if (type==M6 && mode!=DRCT && mode!=INDX && mode!=INDR)
 	  error("JMP/CALL命令で使用できないアドレッシングモード");
 	if (type==M7 && mode==IMMD) mode=SIMMD;  // シフト命令で16以上は無意味
 	if (type==M7 && mode==SIMMD) {           //   SIMMD で足りるはず

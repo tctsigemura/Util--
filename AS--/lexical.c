@@ -73,7 +73,7 @@ struct Rsv_Word rsv_word[] = {
   {"G4"  , G4  }, {"G5"  , G5  }, {"G6"  , G6  }, {"G7"  , G7  },
   {"G8"  , G8  }, {"G9"  , G9  }, {"G10" , G10 }, {"G11" , G11 },
   {"G12" , G12 }, {"FP"  , FP  }, {"SP"  , SP  }, {"USP" , USP },
-  {"FLAG", FLAG}, {"PC"  , PC  }, {null  , 0   }
+  {"FLAG", FLAG}, {null  , 0   }
 };
 
 int  nextch = 0;                                   /* 次の文字               */

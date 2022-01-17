@@ -73,9 +73,9 @@ start	no
 	ld	g1,%g2		; インダイレクト
 	ld	g1,0,g2		; インダイレクトと同じ
 	ld	g1,@g2		; バイトインダイレクト
-	ld	g1,flag
-;	add	g1,flag		; flag は特別
-;	ld	flag,g1		; flag は特別
+	ld	g1,flag         ; flag も汎用レジスタ
+	add	g1,flag		; 
+	ld	flag,g1		;
 ;; 
 ;	st	g0,g1		; レジスタ、レジスタ
 	st	g2,a		; ダイレクト
@@ -130,8 +130,11 @@ loop	jz	loop
 	jhi	loop
 	jls	loop
 	jmp	loop
+	jmp	0,g0
+	jmp	%g0
 	call	printf
 	call	printf,flag
+	call	0,g0
 end
 	in	g0,012
 	in	g1,%g1
