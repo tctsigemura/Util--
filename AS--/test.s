@@ -131,7 +131,6 @@ loop	jz	loop
 	jls	loop
 	jmp	loop
 	jmp	0,g0
-	jmp	%g0
 	call	printf
 	call	printf,flag
 	call	0,g0

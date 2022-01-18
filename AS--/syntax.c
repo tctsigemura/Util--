@@ -2,7 +2,7 @@
  * TaC Assembler Source Code
  *    Tokuyama kousen Educational Computer 16bit Ver.
  *
- * Copyright (C) 2008-2021 by
+ * Copyright (C) 2008-2022 by
  *                      Dept. of Computer Science and Electronic Engineering,
  *                      Tokuyama College of Technology, JAPAN
  *
@@ -485,7 +485,7 @@ void pass0() {                                  // pass0は、EQU命令だけ処
 #define INDR  0x0600   // インダイレクト
 #define BINDR 0x0700   // バイトインダイレクト
 
-int amode() {                                    // アドレッシングモードを調べる
+int amode(int typ) {                             // アドレッシングモードを調べる
   int mode = -1;                                 //  オペコードの変更を決める
   if (bind) {                                    //   @ 付きなら
     bind = false;                                //    バイトインダイレクト(=7)
@@ -496,7 +496,7 @@ int amode() {                                    // アドレッシングモー�
   } else if (imd && isShrtImd(opr[1])) {         //   # の後に小さな定数なら
     imd  = false;                                //    4bit イミディエイト(=5)
     mode = SIMMD;
-  } else if (isReg(opr[1])||opr[1]==FLAG) {      //   @,% なしレジスタオペランド
+  } else if (isReg(opr[1])) {                    //   @,% なしレジスタオペランド
     mode = REG;                                  //    レジスタモード(=4)
   } else if (opr[2]==FP && isShrtOfs(opr[1])) {  //   N,FP で N が5bit以内で
     mode = FPRL;                                 //    偶数なら FP 4bit相対(=3)
@@ -505,7 +505,7 @@ int amode() {                                    // アドレッシングモー�
     mode = IMMD;
   } else if (isReg(opr[2])) {                    //   第３オペランドがあれば
     mode = INDX;                                 //    インデクスド(=1)
-    if (isCnst0(opr[1])) {                       //    オフセットが0なら
+    if (isCnst0(opr[1]) && typ!=M6) {            //    オフセットが0なら
       mode = INDR;                               //      ワードインダイレクトに
       opr[1] = opr[2];                           //        置換える
       opr[2] = 0;                                //
@@ -537,9 +537,9 @@ void pass1() {                  // pass1 はラベル表を作成する
 	  lc_t = lc_t + 2*WORD;                 //   2ワード命令
 	}
       } else if (typ==M4 || typ==M5 ||          // LD,ADD,SUB,...,MOD,ST,
-		 typ==M6 || typ==M7) {          // JMP,SHXX
+		 typ==M6 || typ==M7) {          // JMP,CALL,SHXX
 	int l = 1;                              //   基本的に1ワード命令
-	int mode = amode();                     //   アドレッシングモードを調べ
+	int mode = amode(typ);                  //   アドレッシングモードを調べ
 	if (mode==DRCT || mode==INDX ||         //   これら３種類なら
 	    mode==IMMD) {                       //     2ワード命令
 	  l = 2;                                //     このアドレッシングなら
@@ -606,7 +606,7 @@ void pass2() {                  // pass2は、機械語命令だけ処理する
       } else if (type==M3) {                     // IN,OUT 命令
 	chkReg();                                // 第１オペランドはレジスタか
 	code = code | (regNo(opr[0])<<4);
-	int mode =amode();
+	int mode =amode(type);
 	if (mode==REG) mode = INDR;              // % なしの表記も認める
 	if (mode==DRCT) {                        // ダイレクトモードなら
 	  int a = getVal(opr[1],lc_t+WORD);      //   第2オペランドの値を解決
@@ -621,12 +621,12 @@ void pass2() {                  // pass2は、機械語命令だけ処理する
 	}
 	opr[0] = opr[1] = 0;                     // 使用したオペランドはクリア
       } else if (type==M4 || type==M5 ||         // LD,ADD,SUB,...,MOD,ST,
-		 type==M6 || type==M7) {         // JMP,SHXX
+		 type==M6 || type==M7) {         // JMP,CALL,SHXX
 	chkReg();                                // 第１オペランドはレジスタか
-	int mode =amode();
+	int mode =amode(type);
 	if (type==M5 && (mode==REG||mode==IMMD||mode==SIMMD))
 	  error("ST命令で使用できないアドレッシングモード");
-	if (type==M6 && mode!=DRCT && mode!=INDX && mode!=INDR)
+	if (type==M6 && mode!=DRCT && mode!=INDX)
 	  error("JMP/CALL命令で使用できないアドレッシングモード");
 	if (type==M7 && mode==IMMD) mode=SIMMD;  // シフト命令で16以上は無意味
 	if (type==M7 && mode==SIMMD) {           //   SIMMD で足りるはず
