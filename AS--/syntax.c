@@ -22,6 +22,7 @@
 /*
  * syntax.c : AS--の構文解析ルーチン
  *
+ * 2022.03.13  v3.1.3   : IN/OUTのバイトインダイレクト廃止
  * 2021.10.14  v3.1.0   : TaC-CPU V3 に対応
  * 2019.03.12           : ソースファイル名をパス名でも扱えるように改良
  * 2016.10.09  v3.0.0   : バージョン番号はUtil--全体で同じものを使うようにする
@@ -612,7 +613,7 @@ void pass2() {                  // pass2は、機械語命令だけ処理する
 	  int a = getVal(opr[1],lc_t+WORD);      //   第2オペランドの値を解決
 	  putLst2(lc_t, code, a);                //   2ワード命令として出力
 	  lc_t = lc_t + 2*WORD;
-	} else if (mode==INDR || mode==BINDR) {  // インダイレクトなら
+	} else if (mode==INDR) {                 // インダイレクトなら
 	  code = code | mode | regNo(opr[1]);    //   レジスタを含む命令コード
 	  putLst1(lc_t, code);                   //   1ワード命令として出力
 	  lc_t = lc_t + WORD;

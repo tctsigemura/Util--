@@ -138,11 +138,11 @@ end
 	in	g0,012
 	in	g1,%g1
 	in	g1,g1
-	in	g2,@g1
+;	in	g2,@g1
 	out	g2,0x11
 	out	g1 , % g5
 	out	g1 ,g5
-	out	g0,@g7
+;	out	g0,@g7
 	push	g0
 	push	flag
 	pop	flag
