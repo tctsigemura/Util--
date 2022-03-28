@@ -2,7 +2,7 @@
  * TaC Assembler Source Code
  *    Tokuyama kousen Educational Computer 16bit Ver.
  *
- * Copyright (C) 2008-2012 by
+ * Copyright (C) 2008-2021 by
  *                      Dept. of Computer Science and Electronic Engineering,
  *                      Tokuyama College of Technology, JAPAN
  *
@@ -22,6 +22,7 @@
 /*
  * lexical.c : AS--の字句解析ルーチン
  *
+ * 2021.10.14  v4.0.0   : TaC-CPU V3 に対応
  * 2012.09.27           : @,%の意味が逆になっていた。バグ修正
  * 2012.09.19           : FLAG を追加
  * 2012.08.01  v2.0     : TaC-CPU V2 に対応
@@ -57,22 +58,22 @@ struct Rsv_Word rsv_word[] = {
   {"NO"  , NO  }, {"LD"  , LD  }, {"ST"  , ST  }, {"ADD" , ADD },
   {"SUB" , SUB }, {"CMP" , CMP }, {"AND" , AND }, {"OR"  , OR  },
   {"XOR" , XOR }, {"ADDS", ADDS}, {"MUL" , MUL }, {"DIV" , DIV }, 
-  {"MOD" , MOD }, {"MULL", MULL}, {"DIVL", DIVL},
+  {"MOD" , MOD },
   {"SHLA", SHLA}, {"SHLL", SHLL}, {"SHRA", SHRA}, {"SHRL", SHRL},
   {"JZ"  , JZ  }, {"JC"  , JC  }, {"JM"  , JM  }, {"JO"  , JO  },
   {"JGT" , JGT }, {"JGE" , JGE }, {"JLE" , JLE }, {"JLT" , JLT },
   {"JNZ" , JNZ }, {"JNC" , JNC }, {"JNM" , JNM }, {"JNO" , JNO },
   {"JHI" , JHI }, {"JLS" , JLS }, {"JMP" , JMP },
   {"CALL", CALL}, {"IN"  , IN  }, {"OUT" , OUT }, {"PUSH", PUSH},
-  {"POP" , POP }, {"RET" , RET }, {"RETI", RETI}, {"EI"  , EI  },
-  {"DI"  , DI  }, {"SVC" , SVC }, {"HALT", HALT},
+  {"POP" , POP }, {"RET" , RET }, {"RETI", RETI},
+  {"SVC" , SVC }, {"HALT", HALT},
   {"DB"  , DB  }, {"DW"  , DW  }, {"BS"  , BS  }, {"WS"  , WS  },
   {"EQU" , EQU }, {"STRING",STR},
   {"G0"  , G0  }, {"G1"  , G1  }, {"G2"  , G2  }, {"G3"  , G3  },
   {"G4"  , G4  }, {"G5"  , G5  }, {"G6"  , G6  }, {"G7"  , G7  },
   {"G8"  , G8  }, {"G9"  , G9  }, {"G10" , G10 }, {"G11" , G11 },
   {"G12" , G12 }, {"FP"  , FP  }, {"SP"  , SP  }, {"USP" , USP },
-  {"PC"  , PC  }, {"FLAG", FLAG}, {null  , 0   }
+  {"FLAG", FLAG}, {null  , 0   }
 };
 
 int  nextch = 0;                                   /* 次の文字               */

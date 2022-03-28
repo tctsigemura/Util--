@@ -2,7 +2,7 @@
  * TaC Assembler Source Code
  *    Tokuyama kousen Educational Computer 16bit Ver.
  *
- * Copyright (C) 2008-2019 by
+ * Copyright (C) 2008-2022 by
  *                      Dept. of Computer Science and Electronic Engineering,
  *                      Tokuyama College of Technology, JAPAN
  *
@@ -22,6 +22,8 @@
 /*
  * syntax.c : AS--の構文解析ルーチン
  *
+ * 2022.03.13  v3.1.3   : IN/OUTのバイトインダイレクト廃止
+ * 2021.10.14  v3.1.0   : TaC-CPU V3 に対応
  * 2019.03.12           : ソースファイル名をパス名でも扱えるように改良
  * 2016.10.09  v3.0.0   : バージョン番号はUtil--全体で同じものを使うようにする
  * 2016.02.05  v2.1.1   : 先に BSS に置かれたものが、
@@ -298,10 +300,10 @@ struct InstTbl {                                // 命令表のエントリ
 };
 
 /* InstTbl.type の値 */
-#define M1 1    // NO,RET,RETI,EI,DI,SVC,HALT
+#define M1 1    // NO,RET,RETI,SVC,HALT
 #define M2 2    // PUSH,POP
 #define M3 3    // IN,OUT
-#define M4 4    // LD,ADD,SUBZ,CMP,AND,OR,XOR,ADDS,MUL,DIV,MOD,MULL,DIVL
+#define M4 4    // LD,ADD,SUBZ,CMP,AND,OR,XOR,ADDS,MUL,DIV,MOD
 #define M5 5    // ST
 #define M6 6    // JZ,JC,JM,JO,JGT,JGE,JLE,JLT,JNZ,JNC,JNM,JNO,JHI,JLS,JMP,CALL
 #define M7 7    // SHLA,SHLL,SHRA,SHRL
@@ -312,15 +314,15 @@ struct InstTbl instTbl[] = {
   {NO,  0x0000, M1}, {LD,  0x0800, M4}, {ST,  0x1000, M5}, {ADD, 0x1800, M4},
   {SUB, 0x2000, M4}, {CMP, 0x2800, M4}, {AND, 0x3000, M4}, {OR,  0x3800, M4},
   {XOR, 0x4000, M4}, {ADDS,0x4800, M4}, {MUL, 0x5000, M4}, {DIV, 0x5800, M4},
-  {MOD, 0x6000, M4}, {MULL,0x6800, M4}, {DIVL,0x7000, M4},
+  {MOD, 0x6000, M4},
   {SHLA,0x8000, M7}, {SHLL,0x8800, M7}, {SHRA,0x9000, M7}, {SHRL,0x9800, M7},
   {JZ,  0xA000, M6}, {JC,  0xA010, M6}, {JM,  0xA020, M6}, {JO,  0xA030, M6},
   {JGT, 0xA040, M6}, {JGE, 0xA050, M6}, {JLE, 0xA060, M6}, {JLT, 0xA070, M6}, 
   {JNZ, 0xA080, M6}, {JNC, 0xA090, M6}, {JNM, 0xA0A0, M6}, {JNO, 0xA0B0, M6},
   {JHI, 0xA0C0, M6},                    {JLS, 0xA0E0, M6}, {JMP, 0xA0F0, M6},
   {CALL,0xA800, M6}, {IN,  0xB000, M3}, {OUT, 0xB800, M3}, {PUSH,0xC000, M2},
-  {POP, 0xC400, M2}, {RET, 0xD000, M1}, {RETI,0xD400, M1}, {EI,  0xE000, M1},
-  {DI,  0xE400, M1}, {SVC, 0xF000, M1}, {HALT,0xFF00, M1},
+  {POP, 0xC400, M2}, {RET, 0xD000, M1}, {RETI,0xD400, M1}, 
+  {SVC, 0xF000, M1}, {HALT,0xFF00, M1},
   {EQU, 0x0000, P1}, {STR, 0x0000, P2},
   {DB,  0x0000, P1}, {DW,  0x0000, P1}, {BS,  0x0000, P1}, {WS,  0x0000, P1},
   {0,   0     , 0 }
@@ -484,7 +486,7 @@ void pass0() {                                  // pass0は、EQU命令だけ処
 #define INDR  0x0600   // インダイレクト
 #define BINDR 0x0700   // バイトインダイレクト
 
-int amode() {                                    // アドレッシングモードを調べる
+int amode(int typ) {                             // アドレッシングモードを調べる
   int mode = -1;                                 //  オペコードの変更を決める
   if (bind) {                                    //   @ 付きなら
     bind = false;                                //    バイトインダイレクト(=7)
@@ -495,7 +497,7 @@ int amode() {                                    // アドレッシングモー�
   } else if (imd && isShrtImd(opr[1])) {         //   # の後に小さな定数なら
     imd  = false;                                //    4bit イミディエイト(=5)
     mode = SIMMD;
-  } else if (isReg(opr[1])||opr[1]==FLAG) {      //   @,% なしレジスタオペランド
+  } else if (isReg(opr[1])) {                    //   @,% なしレジスタオペランド
     mode = REG;                                  //    レジスタモード(=4)
   } else if (opr[2]==FP && isShrtOfs(opr[1])) {  //   N,FP で N が5bit以内で
     mode = FPRL;                                 //    偶数なら FP 4bit相対(=3)
@@ -504,7 +506,7 @@ int amode() {                                    // アドレッシングモー�
     mode = IMMD;
   } else if (isReg(opr[2])) {                    //   第３オペランドがあれば
     mode = INDX;                                 //    インデクスド(=1)
-    if (isCnst0(opr[1])) {                       //    オフセットが0なら
+    if (isCnst0(opr[1]) && typ!=M6) {            //    オフセットが0なら
       mode = INDR;                               //      ワードインダイレクトに
       opr[1] = opr[2];                           //        置換える
       opr[2] = 0;                                //
@@ -526,7 +528,7 @@ void pass1() {                  // pass1 はラベル表を作成する
       struct InstTbl *inst = srcInst(op);       // 命令表を探索、
       int typ = inst->type;                     //   見つからない場合はエラー
       if (lab && typ<P1) defName(lc_t,SYMTEXT); // 機械語命令ならラベルを登録
-      if (typ==M1 || typ==M2) {                 // NO,RET,RETI,EI,DI,HALT,
+      if (typ==M1 || typ==M2) {                 // NO,RET,RETI,HALT,
 	lc_t = lc_t + WORD;                     // PUSH,POP これらは1ワード命令
       } else if (typ==M3) {                     // IN,OUT
 	if (isReg(opr[1])) {                    // レジスタによるポート指定なら
@@ -535,10 +537,10 @@ void pass1() {                  // pass1 はラベル表を作成する
 	  trSize = chkName(opr[1]) + trSize;    //   ラベル参照ありならTr増加
 	  lc_t = lc_t + 2*WORD;                 //   2ワード命令
 	}
-      } else if (typ==M4 || typ==M5 ||          // LD,ADD,SUB,...,DIVL,ST,
-		 typ==M6 || typ==M7) {          // JMP,SHXX
+      } else if (typ==M4 || typ==M5 ||          // LD,ADD,SUB,...,MOD,ST,
+		 typ==M6 || typ==M7) {          // JMP,CALL,SHXX
 	int l = 1;                              //   基本的に1ワード命令
-	int mode = amode();                     //   アドレッシングモードを調べ
+	int mode = amode(typ);                  //   アドレッシングモードを調べ
 	if (mode==DRCT || mode==INDX ||         //   これら３種類なら
 	    mode==IMMD) {                       //     2ワード命令
 	  l = 2;                                //     このアドレッシングなら
@@ -593,7 +595,8 @@ void pass2() {                  // pass2は、機械語命令だけ処理する
       struct InstTbl *inst = srcInst(op);        //   命令表を検索
       int type = inst->type;
       int code = inst->code;
-      if (type==M1) {                            // NO,RET,RETI,EI,DI,HALT命令
+      if (type==M1) {                            // NO,RET,RETI,HALT命令
+        if (op==RETI) code = code | 0x00f0;      // RETIのRdは0xf
 	putLst1(lc_t, code);                     // オペランドの無い1ワード命令
 	lc_t = lc_t + WORD;
       } else if (type==M2) {                     // PUSH,POP 命令
@@ -604,13 +607,13 @@ void pass2() {                  // pass2は、機械語命令だけ処理する
       } else if (type==M3) {                     // IN,OUT 命令
 	chkReg();                                // 第１オペランドはレジスタか
 	code = code | (regNo(opr[0])<<4);
-	int mode =amode();
+	int mode =amode(type);
 	if (mode==REG) mode = INDR;              // % なしの表記も認める
 	if (mode==DRCT) {                        // ダイレクトモードなら
 	  int a = getVal(opr[1],lc_t+WORD);      //   第2オペランドの値を解決
 	  putLst2(lc_t, code, a);                //   2ワード命令として出力
 	  lc_t = lc_t + 2*WORD;
-	} else if (mode==INDR || mode==BINDR) {  // インダイレクトなら
+	} else if (mode==INDR) {                 // インダイレクトなら
 	  code = code | mode | regNo(opr[1]);    //   レジスタを含む命令コード
 	  putLst1(lc_t, code);                   //   1ワード命令として出力
 	  lc_t = lc_t + WORD;
@@ -618,16 +621,13 @@ void pass2() {                  // pass2は、機械語命令だけ処理する
 	  error("IN/OUT命令で使用できないアドレッシングモード");
 	}
 	opr[0] = opr[1] = 0;                     // 使用したオペランドはクリア
-      } else if (type==M4 || type==M5 ||         // LD,ADD,SUB,...,DIVL,ST,
-		 type==M6 || type==M7) {         // JMP,SHXX
+      } else if (type==M4 || type==M5 ||         // LD,ADD,SUB,...,MOD,ST,
+		 type==M6 || type==M7) {         // JMP,CALL,SHXX
 	chkReg();                                // 第１オペランドはレジスタか
-	if ((op==MULL||op==DIVL)&&(regNo(opr[0])&1)!=0)
-	  error("MULL,DIVL命令で奇数番レジスタを使用");
-	if (op!=LD && opr[1]==FLAG) error("FLAGは使用できない");
-	int mode =amode();
+	int mode =amode(type);
 	if (type==M5 && (mode==REG||mode==IMMD||mode==SIMMD))
 	  error("ST命令で使用できないアドレッシングモード");
-	if (type==M6 && mode!=DRCT && mode!=INDX && mode!=INDR)
+	if (type==M6 && mode!=DRCT && mode!=INDX)
 	  error("JMP/CALL命令で使用できないアドレッシングモード");
 	if (type==M7 && mode==IMMD) mode=SIMMD;  // シフト命令で16以上は無意味
 	if (type==M7 && mode==SIMMD) {           //   SIMMD で足りるはず
@@ -638,15 +638,13 @@ void pass2() {                  // pass2は、機械語命令だけ処理する
 	code = code | (regNo(opr[0])<<4);
 	if (FPRL<=mode) {                        // 1ワード命令なら
 	  int rx = 0;
-	  if (mode==SIMMD)                       //   4bit整数を使用するなら
+	  if (mode==SIMMD) {                     //   4bit整数を使用するなら
 	    rx = getVal(opr[1],lc_t+WORD) & 0xf;
-	  else if (mode==FPRL)                   //   4bit相対を使用するなら
+	  } else if (mode==FPRL) {               //   4bit相対を使用するなら
 	    rx = (getVal(opr[1],lc_t+WORD)>>1) & 0xf;
-	  else if (opr[1]==FLAG) {               //   フラグはLD命令のみ
-	    rx =0;                               //     rx は使用しない
-	    code = code + 0x0800;                //     code をずらす
-	  } else                                 //   レジスタ
+	  } else {                               //   レジスタ
 	    rx = regNo(opr[1]);
+          }
 	  putLst1(lc_t, code|mode|rx);           //   1ワード命令として出力
 	  if (mode==FPRL) opr[2] = 0;            //   使用オペランドをクリア
 	  lc_t = lc_t + WORD;
