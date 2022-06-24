@@ -265,7 +265,7 @@ void readRelTbl() {                           // 再配置表を読み込む
 // コードのコピー
 void copyCode(int base , int size) {          // プログラムとデータをリロケートしながらコピーする
   xSeek(HDRSIZ);           //入力ファイルをTEXTセグメントへ
-  fseek(base);             //出力ファイルをページ境界へシーク
+  fseek(out,(long)base,SEEK_SET);             //出力ファイルをページ境界へシーク
   int rel = 0;
   for (int i=0; i<size; i=i+WORD) {
     int w = getW();
@@ -325,8 +325,8 @@ int main(int argc, char **argv) {
 
   xOpen(argv[i+1]);                           // 入力ファイルオープン
   readHdr();                                  // ヘッダを読み込む
-  dataBase = (textBase + textSize + PAGESIZ - 1);     // DATAセグメントのアドレスを決め
-  dataBase = ~dataBase;
+  dataBase = (textBase + textSize + PAGESIZ - 1);
+  dataBase = dataBase & ~(PAGESIZ - 1);       // DATAセグメントのアドレスを決め
   bssBase  = dataBase + dataSize;             // BSSセグメントのアドレスを決め
   readStrTbl();                               // 文字列表を読み込む
   fclose(in);                                 // EOFに達したオープンしなおし
@@ -346,8 +346,8 @@ int main(int argc, char **argv) {
   putW(atoi(argv[i+2]));                      // ユーザモード時のスタックサイズ
 
   // プログラム本体出力
-  copyCode(PAGESIZ,textSize);                 //出力ファイルにTEXTセグメントをコピー
-  copyCode(PAGESIZ + dataBase,dataSize);      //出力ファイルにDATAセグメントをコピー
+  copyCode(PAGESIZ, textSize);                 //出力ファイルにTEXTセグメントをコピー
+  copyCode(PAGESIZ+dataBase, dataSize);      //出力ファイルにDATAセグメントをコピー
 
   /*再配置情報の出力
   for(int i=0; i<relIdx; i=i+1) {            // 再配置表の全レコードについて
