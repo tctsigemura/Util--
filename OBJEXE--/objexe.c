@@ -260,12 +260,14 @@ void readRelTbl() {                           // 再配置表を読み込む
 }
 
 //--------------------------------ファイル出力部------------------------------
+#define PAGESIZ 256               //ページサイズ
 
 // コードのコピー
-void copyCode() {          // プログラムとデータをリロケートしながらコピーする
-  xSeek(256);
+void copyCode(int base , int size) {          // プログラムとデータをリロケートしながらコピーする
+  xSeek(HDRSIZ);           //入力ファイルをTEXTセグメントへ
+  fseek(base);             //出力ファイルをページ境界へシーク
   int rel = 0;
-  for (int i=0; i<textSize+dataSize; i=i+WORD) {
+  for (int i=0; i<size; i=i+WORD) {
     int w = getW();
     if (rel<relIdx && relTbl[rel].addr==i) {  // ポインタのアドレスに達した
       int symx = relTbl[rel].symx;            // 名前表のインデクスに変換
@@ -273,9 +275,6 @@ void copyCode() {          // プログラムとデータをリロケートし�
       rel = rel + 1;                          // 次のポインタに進む
     }
     putW(w);
-    if(i==textSize-2){
-      xSeek(dataBase);
-    }
   }
 }
 
@@ -326,7 +325,8 @@ int main(int argc, char **argv) {
 
   xOpen(argv[i+1]);                           // 入力ファイルオープン
   readHdr();                                  // ヘッダを読み込む
-  dataBase = (textBase + textSize + 255) && 0xFF00 ;             // DATAセグメントのアドレスを決め
+  dataBase = (textBase + textSize + PAGESIZ - 1);     // DATAセグメントのアドレスを決め
+  dataBase = ~dataBase;
   bssBase  = dataBase + dataSize;             // BSSセグメントのアドレスを決め
   readStrTbl();                               // 文字列表を読み込む
   fclose(in);                                 // EOFに達したオープンしなおし
@@ -346,7 +346,8 @@ int main(int argc, char **argv) {
   putW(atoi(argv[i+2]));                      // ユーザモード時のスタックサイズ
 
   // プログラム本体出力
-  copyCode();                                 // TEXT、DATAを出力
+  copyCode(PAGESIZ,textSize);                 //出力ファイルにTEXTセグメントをコピー
+  copyCode(PAGESIZ + dataBase,dataSize);      //出力ファイルにDATAセグメントをコピー
 
   /*再配置情報の出力
   for(int i=0; i<relIdx; i=i+1) {            // 再配置表の全レコードについて
