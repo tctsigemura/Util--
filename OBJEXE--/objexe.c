@@ -303,7 +303,7 @@ int main(int argc, char **argv) {
 
   boolean iop = false;                        // I/O 特権モード
   int i = 1;                                  // コマンド行引数の位置
-  int magic = 0x108;                          // exe ファイルのジック番号
+  int magic = 0x108;                          // exe ファイルのマジック番号
   if (argc>1 && strcmp(argv[i],"-P")==0) {    // I/O 特権モードのオプション
     iop = true;
     magic = 0x109;                            // I/O 特権モードのマジック番号
@@ -340,9 +340,11 @@ int main(int argc, char **argv) {
   // ヘッダ出力
   putW(magic);                                // マジック番号を出力
   putW(textSize);                             // Textサイズ (ヘッダ情報のまま)
-  putW(dataSize);                             // Dataサイズ (ヘッダ情報のまま)
-  putW(bssSize);                              // BSS サイズ (ヘッダ情報のまま)
-  putW(relIdx * 2);                           // 再配置情報サイズ(1Word=2Byte)
+  putW((dataSize + bssSize + PAGESIZ - 1)
+              & ~(PAGESIZ - 1));                
+  //putW(dataSize);                             // Dataサイズ (ヘッダ情報のまま)
+  //putW(bssSize);                              // BSS サイズ (ヘッダ情報のまま)
+  //putW(relIdx * 2);                           // 再配置情報サイズ(1Word=2Byte)
   //putW(atoi(argv[i+2]));                      // ユーザモード時のスタックサイズ
 
   // プログラム本体出力
