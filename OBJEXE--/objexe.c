@@ -243,7 +243,7 @@ int relIdx;                                   // 表のどこまで使用した�
 
 void readRelTbl() {                           // 再配置表を読み込む
   xSeek(HDRSIZ+textSize+dataSize);
-  int base=0;
+  int base=textBase;
   int size=trSize;
   for (int j=0; j<2; j=j+1) {                 // Tr, Dr の２つについて
     for (int i=0; i<size; i=i+2*WORD) {       // 1エントリ2ワード
@@ -254,7 +254,7 @@ void readRelTbl() {                           // 再配置表を読み込む
       relTbl[relIdx].symx = symx;
       relIdx = relIdx + 1;
     }
-    base=textSize;
+    base=dataBase;
     size=drSize;
   }
 }
@@ -280,10 +280,10 @@ void copyCode(int base , int size) {          // プログラムとデータを�
 
 // 使い方表示関数
 void usage(char *name) {
-  fprintf(stderr, "使用方法 : %s [-Phv] <exefile> <objfile> <stkSiz>\n", name);
+  fprintf(stderr, "使用方法 : %s [-Phv] <exefile> <objfile>\n", name);
   fprintf(stderr, "    <objfile> 単一の .o ファイルから入力し\n");
   fprintf(stderr, "    <exefile> へ出力\n");
-  fprintf(stderr, "    <stkSiz>  スタック＋ヒープ領域サイズ(バイト単位)\n");
+  //fprintf(stderr, "    <stkSiz>  スタック＋ヒープ領域サイズ(バイト単位)\n");
   fprintf(stderr, "\n");
   fprintf(stderr, "    -P      : I/O 特権モードの exe ファイルを作る\n");
   fprintf(stderr, "    -h, -v  : このメッセージを表示\n");
@@ -311,7 +311,7 @@ int main(int argc, char **argv) {
     argc = argc - 1;
   }
 
-  if (argc!=4) {
+  if (argc!=3) {
     usage(argv[0]);                           // 使い方とバージョンを表示
     exit(0);
   }
@@ -325,8 +325,8 @@ int main(int argc, char **argv) {
 
   xOpen(argv[i+1]);                           // 入力ファイルオープン
   readHdr();                                  // ヘッダを読み込む
-  dataBase = (textBase + textSize + PAGESIZ - 1);
-  dataBase = dataBase & ~(PAGESIZ - 1);       // DATAセグメントのアドレスを決め
+  dataBase = (textBase + textSize + PAGESIZ - 1)
+              & ~(PAGESIZ - 1);       // DATAセグメントのアドレスを決め
   bssBase  = dataBase + dataSize;             // BSSセグメントのアドレスを決め
   readStrTbl();                               // 文字列表を読み込む
   fclose(in);                                 // EOFに達したオープンしなおし
@@ -343,7 +343,7 @@ int main(int argc, char **argv) {
   putW(dataSize);                             // Dataサイズ (ヘッダ情報のまま)
   putW(bssSize);                              // BSS サイズ (ヘッダ情報のまま)
   putW(relIdx * 2);                           // 再配置情報サイズ(1Word=2Byte)
-  putW(atoi(argv[i+2]));                      // ユーザモード時のスタックサイズ
+  //putW(atoi(argv[i+2]));                      // ユーザモード時のスタックサイズ
 
   // プログラム本体出力
   copyCode(PAGESIZ, textSize);                 //出力ファイルにTEXTセグメントをコピー
