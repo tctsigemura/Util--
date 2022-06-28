@@ -25,6 +25,7 @@
 
 /*
  *
+ * 2022.06.28  : EXEファイルをページングに対応
  * 2017.01.1i  : IOPR を -P オプションに変更
  * 2017.01.11  : 実行モードの種類を変更（KERN 廃止、IOPR 追加）
  * 2016.12/28  : EXEファイルのマジック番号を、コマンドラインから与えられた
@@ -260,13 +261,11 @@ void readRelTbl() {                           // 再配置表を読み込む
 }
 
 //--------------------------------ファイル出力部------------------------------
-#define PAGESIZ 256               //ページサイズ
+#define PAGESIZ 256                           //ページサイズ
 
 // コードのコピー
-void copyCode(int base , int size) {          // プログラムとデータをリロケートしながらコピーする
-  xSeek(HDRSIZ);           //入力ファイルをTEXTセグメントへ
-  fseek(out,(long)base,SEEK_SET);             //出力ファイルをページ境界へシーク
-  int rel = 0;
+int copyCode(int base , int size,int rel) {   // プログラムとデータをリロケートしながらコピーする
+  fseek(out,(long)base+PAGESIZ,SEEK_SET);     //出力ファイルをページ境界へシーク
   for (int i=0; i<size; i=i+WORD) {
     int w = getW();
     if (rel<relIdx && relTbl[rel].addr==i) {  // ポインタのアドレスに達した
@@ -276,6 +275,7 @@ void copyCode(int base , int size) {          // プログラムとデータを�
     }
     putW(w);
   }
+  return rel;                                 //終了時のrelの値を返す
 }
 
 // 使い方表示関数
@@ -283,7 +283,6 @@ void usage(char *name) {
   fprintf(stderr, "使用方法 : %s [-Phv] <exefile> <objfile>\n", name);
   fprintf(stderr, "    <objfile> 単一の .o ファイルから入力し\n");
   fprintf(stderr, "    <exefile> へ出力\n");
-  //fprintf(stderr, "    <stkSiz>  スタック＋ヒープ領域サイズ(バイト単位)\n");
   fprintf(stderr, "\n");
   fprintf(stderr, "    -P      : I/O 特権モードの exe ファイルを作る\n");
   fprintf(stderr, "    -h, -v  : このメッセージを表示\n");
@@ -301,15 +300,8 @@ int main(int argc, char **argv) {
     exit(0);
   }
 
-  boolean iop = false;                        // I/O 特権モード
   int i = 1;                                  // コマンド行引数の位置
   int magic = 0x108;                          // exe ファイルのマジック番号
-  if (argc>1 && strcmp(argv[i],"-P")==0) {    // I/O 特権モードのオプション
-    iop = true;
-    magic = 0x109;                            // I/O 特権モードのマジック番号
-    i = i + 1;
-    argc = argc - 1;
-  }
 
   if (argc!=3) {
     usage(argv[0]);                           // 使い方とバージョンを表示
@@ -341,21 +333,17 @@ int main(int argc, char **argv) {
   putW(magic);                                // マジック番号を出力
   putW(textSize);                             // Textサイズ (ヘッダ情報のまま)
   putW((dataSize + bssSize + PAGESIZ - 1)
-              & ~(PAGESIZ - 1));                
-  //putW(dataSize);                             // Dataサイズ (ヘッダ情報のまま)
-  //putW(bssSize);                              // BSS サイズ (ヘッダ情報のまま)
-  //putW(relIdx * 2);                           // 再配置情報サイズ(1Word=2Byte)
-  //putW(atoi(argv[i+2]));                      // ユーザモード時のスタックサイズ
+              & ~(PAGESIZ - 1));              //Dataとbssのサイズの合計をページサイズで切り上げ
 
   // プログラム本体出力
-  copyCode(PAGESIZ, textSize);                 //出力ファイルにTEXTセグメントをコピー
-  copyCode(PAGESIZ+dataBase, dataSize);      //出力ファイルにDATAセグメントをコピー
-
-  /*再配置情報の出力
-  for(int i=0; i<relIdx; i=i+1) {            // 再配置表の全レコードについて
-    putW(relTbl[i].addr);                    // 再配置対象アドレスを出力
+  xSeek(HDRSIZ);                              //入力ファイルをTEXTセグメントへ
+  int rel = copyCode(textBase, textSize, 0);  //出力ファイルにTEXTセグメントをコピー
+  copyCode(dataBase, dataSize, rel);          //出力ファイルにDATAセグメントをコピー
+  if(dataSize%PAGESIZ!=0){
+    fseek(out,((2*PAGESIZ+dataBase+dataSize)
+                & ~(PAGESIZ-1))-1,SEEK_SET);  //出力をdataとbssの次のページ境界の一つ前にシーク
+    putB(0);                                  //出力に0を書き込み
   }
-  */
 
   fclose(in);
   fclose(out);
