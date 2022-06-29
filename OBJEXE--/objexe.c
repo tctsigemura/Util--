@@ -264,7 +264,7 @@ void readRelTbl() {                           // 再配置表を読み込む
 #define PAGESIZ 256                                //ページサイズ
 
 // コードのコピー
-int copyCode(int base , int size,int rel) {        //リロケートしながらコピー
+int copyCode(int base, int size, int rel) {        //リロケートしながらコピー
   fseek(out,(long)base+PAGESIZ,SEEK_SET);          //出力をページ境界へシーク
   for (int i=0; i<size; i=i+WORD) {
     int w = getW();
@@ -295,7 +295,7 @@ void usage(char *name) {
 // main 関数
 int main(int argc, char **argv) {
   if (argc>1 && (strcmp(argv[1],"-v")==0 ||   // "-v",
-		 strcmp(argv[1],"-h")==0)) {              // "-h" で、
+		 strcmp(argv[1],"-h")==0)) {  // "-h" で、
     usage(argv[0]);                           // 使い方とバージョンを表示
     exit(0);
   }
