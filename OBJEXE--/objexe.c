@@ -25,7 +25,7 @@
 
 /*
  *
- * 2022.06.28  : EXEファイルをページングに対応
+ * 2022.06.29  : EXEファイルをページングに対応
  * 2017.01.1i  : IOPR を -P オプションに変更
  * 2017.01.11  : 実行モードの種類を変更（KERN 廃止、IOPR 追加）
  * 2016.12/28  : EXEファイルのマジック番号を、コマンドラインから与えられた
@@ -261,21 +261,21 @@ void readRelTbl() {                           // 再配置表を読み込む
 }
 
 //--------------------------------ファイル出力部------------------------------
-#define PAGESIZ 256                           //ページサイズ
+#define PAGESIZ 256                                //ページサイズ
 
 // コードのコピー
-int copyCode(int base , int size,int rel) {   // プログラムとデータをリロケートしながらコピーする
-  fseek(out,(long)base+PAGESIZ,SEEK_SET);     //出力ファイルをページ境界へシーク
+int copyCode(int base , int size,int rel) {        //リロケートしながらコピー
+  fseek(out,(long)base+PAGESIZ,SEEK_SET);          //出力をページ境界へシーク
   for (int i=0; i<size; i=i+WORD) {
     int w = getW();
-    if (rel<relIdx && relTbl[rel].addr==i) {  // ポインタのアドレスに達した
-      int symx = relTbl[rel].symx;            // 名前表のインデクスに変換
+    if (rel<relIdx && relTbl[rel].addr==i+base) {  // ポインタのアドレスに達した
+      int symx = relTbl[rel].symx;                 // 名前表のインデクスに変換
       w = symTbl[symx].val;
-      rel = rel + 1;                          // 次のポインタに進む
+      rel = rel + 1;                               // 次のポインタに進む
     }
     putW(w);
   }
-  return rel;                                 //終了時のrelの値を返す
+  return rel;                                      //終了時のrelの値を返す
 }
 
 // 使い方表示関数
@@ -295,7 +295,7 @@ void usage(char *name) {
 // main 関数
 int main(int argc, char **argv) {
   if (argc>1 && (strcmp(argv[1],"-v")==0 ||   // "-v",
-		 strcmp(argv[1],"-h")==0)) {  // "-h" で、
+		 strcmp(argv[1],"-h")==0)) {              // "-h" で、
     usage(argv[0]);                           // 使い方とバージョンを表示
     exit(0);
   }
@@ -318,7 +318,7 @@ int main(int argc, char **argv) {
   xOpen(argv[i+1]);                           // 入力ファイルオープン
   readHdr();                                  // ヘッダを読み込む
   dataBase = (textBase + textSize + PAGESIZ - 1)
-              & ~(PAGESIZ - 1);       // DATAセグメントのアドレスを決め
+              & ~(PAGESIZ - 1);               // DATAセグメントのアドレスを決め
   bssBase  = dataBase + dataSize;             // BSSセグメントのアドレスを決め
   readStrTbl();                               // 文字列表を読み込む
   fclose(in);                                 // EOFに達したオープンしなおし
