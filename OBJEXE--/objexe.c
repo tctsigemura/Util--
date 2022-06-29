@@ -2,7 +2,7 @@
  * TaC-OS Source Code
  *    Tokuyama kousen Advanced educational Computer.
  *
- * Copyright (C) 2011 - 2019 by
+ * Copyright (C) 2011 - 2022 by
  *                      Dept. of Computer Science and Electronic Engineering,
  *                      Tokuyama College of Technology, JAPAN
  *
@@ -25,6 +25,7 @@
 
 /*
  *
+ * 2022.06.29  : EXEファイルをページングに対応
  * 2017.01.1i  : IOPR を -P オプションに変更
  * 2017.01.11  : 実行モードの種類を変更（KERN 廃止、IOPR 追加）
  * 2016.12/28  : EXEファイルのマジック番号を、コマンドラインから与えられた
@@ -243,7 +244,7 @@ int relIdx;                                   // 表のどこまで使用した�
 
 void readRelTbl() {                           // 再配置表を読み込む
   xSeek(HDRSIZ+textSize+dataSize);
-  int base=0;
+  int base=textBase;
   int size=trSize;
   for (int j=0; j<2; j=j+1) {                 // Tr, Dr の２つについて
     for (int i=0; i<size; i=i+2*WORD) {       // 1エントリ2ワード
@@ -254,34 +255,34 @@ void readRelTbl() {                           // 再配置表を読み込む
       relTbl[relIdx].symx = symx;
       relIdx = relIdx + 1;
     }
-    base=textSize;
+    base=dataBase;
     size=drSize;
   }
 }
 
 //--------------------------------ファイル出力部------------------------------
+#define PAGESIZ 256                                //ページサイズ
 
 // コードのコピー
-void copyCode() {          // プログラムとデータをリロケートしながらコピーする
-  xSeek(HDRSIZ);
-  int rel = 0;
-  for (int i=0; i<textSize+dataSize; i=i+WORD) {
+int copyCode(int base, int size, int rel) {        //リロケートしながらコピー
+  fseek(out,(long)base+PAGESIZ,SEEK_SET);          //出力をページ境界へシーク
+  for (int i=0; i<size; i=i+WORD) {
     int w = getW();
-    if (rel<relIdx && relTbl[rel].addr==i) {  // ポインタのアドレスに達した
-      int symx = relTbl[rel].symx;            // 名前表のインデクスに変換
+    if (rel<relIdx && relTbl[rel].addr==i+base) {  // ポインタのアドレスに達した
+      int symx = relTbl[rel].symx;                 // 名前表のインデクスに変換
       w = symTbl[symx].val;
-      rel = rel + 1;                          // 次のポインタに進む
+      rel = rel + 1;                               // 次のポインタに進む
     }
     putW(w);
   }
+  return rel;                                      //終了時のrelの値を返す
 }
 
 // 使い方表示関数
 void usage(char *name) {
-  fprintf(stderr, "使用方法 : %s [-Phv] <exefile> <objfile> <stkSiz>\n", name);
+  fprintf(stderr, "使用方法 : %s [-Phv] <exefile> <objfile>\n", name);
   fprintf(stderr, "    <objfile> 単一の .o ファイルから入力し\n");
   fprintf(stderr, "    <exefile> へ出力\n");
-  fprintf(stderr, "    <stkSiz>  スタック＋ヒープ領域サイズ(バイト単位)\n");
   fprintf(stderr, "\n");
   fprintf(stderr, "    -P      : I/O 特権モードの exe ファイルを作る\n");
   fprintf(stderr, "    -h, -v  : このメッセージを表示\n");
@@ -299,17 +300,15 @@ int main(int argc, char **argv) {
     exit(0);
   }
 
-  boolean iop = false;                        // I/O 特権モード
   int i = 1;                                  // コマンド行引数の位置
-  int magic = 0x108;                          // exe ファイルのジック番号
+  int magic = 0x108;                          // exe ファイルのマジック番号
   if (argc>1 && strcmp(argv[i],"-P")==0) {    // I/O 特権モードのオプション
-    iop = true;
     magic = 0x109;                            // I/O 特権モードのマジック番号
     i = i + 1;
     argc = argc - 1;
   }
 
-  if (argc!=4) {
+  if (argc!=3) {
     usage(argv[0]);                           // 使い方とバージョンを表示
     exit(0);
   }
@@ -323,7 +322,8 @@ int main(int argc, char **argv) {
 
   xOpen(argv[i+1]);                           // 入力ファイルオープン
   readHdr();                                  // ヘッダを読み込む
-  dataBase = textBase + textSize;             // DATAセグメントのアドレスを決め
+  dataBase = (textBase + textSize + PAGESIZ - 1)
+              & ~(PAGESIZ - 1);               // DATAセグメントのアドレスを決め
   bssBase  = dataBase + dataSize;             // BSSセグメントのアドレスを決め
   readStrTbl();                               // 文字列表を読み込む
   fclose(in);                                 // EOFに達したオープンしなおし
@@ -337,17 +337,17 @@ int main(int argc, char **argv) {
   // ヘッダ出力
   putW(magic);                                // マジック番号を出力
   putW(textSize);                             // Textサイズ (ヘッダ情報のまま)
-  putW(dataSize);                             // Dataサイズ (ヘッダ情報のまま)
-  putW(bssSize);                              // BSS サイズ (ヘッダ情報のまま)
-  putW(relIdx * 2);                           // 再配置情報サイズ(1Word=2Byte)
-  putW(atoi(argv[i+2]));                      // ユーザモード時のスタックサイズ
+  putW((dataSize + bssSize + PAGESIZ - 1)
+              & ~(PAGESIZ - 1));              //Dataとbssのサイズの合計をページサイズで切り上げ
 
   // プログラム本体出力
-  copyCode();                                 // TEXT、DATAを出力
-
-  //再配置情報の出力
-  for(int i=0; i<relIdx; i=i+1) {            // 再配置表の全レコードについて
-    putW(relTbl[i].addr);                    // 再配置対象アドレスを出力
+  xSeek(HDRSIZ);                              //入力ファイルをTEXTセグメントへ
+  int rel = copyCode(textBase, textSize, 0);  //出力ファイルにTEXTセグメントをコピー
+  copyCode(dataBase, dataSize, rel);          //出力ファイルにDATAセグメントをコピー
+  if(dataSize%PAGESIZ!=0){
+    fseek(out,((2*PAGESIZ+dataBase+dataSize)
+                & ~(PAGESIZ-1))-1,SEEK_SET);  //出力をdataとbssの次のページ境界の一つ前にシーク
+    putB(0);                                  //出力に0を書き込み
   }
 
   fclose(in);
