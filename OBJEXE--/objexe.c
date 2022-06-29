@@ -2,7 +2,7 @@
  * TaC-OS Source Code
  *    Tokuyama kousen Advanced educational Computer.
  *
- * Copyright (C) 2011 - 2019 by
+ * Copyright (C) 2011 - 2022 by
  *                      Dept. of Computer Science and Electronic Engineering,
  *                      Tokuyama College of Technology, JAPAN
  *
@@ -302,6 +302,11 @@ int main(int argc, char **argv) {
 
   int i = 1;                                  // コマンド行引数の位置
   int magic = 0x108;                          // exe ファイルのマジック番号
+  if (argc>1 && strcmp(argv[i],"-P")==0) {    // I/O 特権モードのオプション
+    magic = 0x109;                            // I/O 特権モードのマジック番号
+    i = i + 1;
+    argc = argc - 1;
+  }
 
   if (argc!=3) {
     usage(argv[0]);                           // 使い方とバージョンを表示
