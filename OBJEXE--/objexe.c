@@ -334,20 +334,30 @@ int main(int argc, char **argv) {
 
   //EXEファイル出力部
 
+  // 出力のためのサイズ計算
+  // ページサイズで切り上げたTextセグメントのサイズ
+  int wTextSize = (textSize + PAGESIZ - 1) & ~(PAGESIZ - 1);
+  // ページサイズで切り上げたDataセグメントのサイズ
+  int wDataSize = (dataSize + PAGESIZ - 1) & ~(PAGESIZ - 1);
+  // Dataセグメントのページに入るBssセグメントのサイズを引いたBssセグメントのサイズ
+  int wBssSize =  bssSize - ((dataSize/PAGESIZ+1)*PAGESIZ - dataSize);
+  if(wBssSize < 0 ){                          // サイズが負になっていたら
+    wBssSize = 0;                             // サイズを0にする
+  }
+
   // ヘッダ出力
   putW(magic);                                // マジック番号を出力
-  putW(textSize);                             // Textサイズ (ヘッダ情報のまま)
-  putW((dataSize + bssSize + PAGESIZ - 1)
-              & ~(PAGESIZ - 1));              //Dataとbssのサイズの合計をページサイズで切り上げ
+  putW(wTextSize);                            // Textサイズ 
+  putW(wDataSize);                            // Dataサイズ 
+  putW(wBssSize);                             // Bssサイズ
 
   // プログラム本体出力
-  xSeek(HDRSIZ);                              //入力ファイルをTEXTセグメントへ
-  int rel = copyCode(textBase, textSize, 0);  //出力ファイルにTEXTセグメントをコピー
-  copyCode(dataBase, dataSize, rel);          //出力ファイルにDATAセグメントをコピー
-  if(dataSize%PAGESIZ!=0){
-    fseek(out,((2*PAGESIZ+dataBase+dataSize)
-                & ~(PAGESIZ-1))-1,SEEK_SET);  //出力をdataとbssの次のページ境界の一つ前にシーク
-    putB(0);                                  //出力に0を書き込み
+  xSeek(HDRSIZ);                              // 入力をTEXTセグメントへSeek
+  int rel = copyCode(textBase, textSize, 0);  // 出力にTEXTセグメントをコピー
+  copyCode(dataBase, dataSize, rel);          // 出力にDATAセグメントをコピー
+             
+  for (int i=0;i<wDataSize-dataSize;i=i+1) { // ページ境界まで0を書き込み
+    putB(0);
   }
 
   fclose(in);
