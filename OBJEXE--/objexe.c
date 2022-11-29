@@ -355,11 +355,9 @@ int main(int argc, char **argv) {
   xSeek(HDRSIZ);                              // 入力ファイルをTEXTセグメントへ
   int rel = copyCode(textBase, textSize, 0);  // 出力ファイルにTEXTセグメントをコピー
   copyCode(dataBase, dataSize, rel);          // 出力ファイルにDATAセグメントをコピー
-  // Dataセグメントのサイズがページサイズの整数倍でなかったら
-  if(dataSize%PAGESIZ!=0){                    
-    for (int i=0; i<wDataSize-dataSize; i=i+1) {  // ページ境界まで0を書き込み
-      putB(0);
-    }
+             
+  for (int i=0; i<wDataSize-dataSize; i=i+1) {  // ページ境界まで0を書き込み
+    putB(0);
   }
 
   fclose(in);
