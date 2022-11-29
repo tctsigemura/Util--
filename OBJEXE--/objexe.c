@@ -352,11 +352,11 @@ int main(int argc, char **argv) {
   putW(wBssSize);                             // Bssサイズ
 
   // プログラム本体出力
-  xSeek(HDRSIZ);                              // 入力ファイルをTEXTセグメントへ
-  int rel = copyCode(textBase, textSize, 0);  // 出力ファイルにTEXTセグメントをコピー
-  copyCode(dataBase, dataSize, rel);          // 出力ファイルにDATAセグメントをコピー
+  xSeek(HDRSIZ);                              // 入力をTEXTセグメントへSeek
+  int rel = copyCode(textBase, textSize, 0);  // 出力にTEXTセグメントをコピー
+  copyCode(dataBase, dataSize, rel);          // 出力にDATAセグメントをコピー
              
-  for (int i=0; i<wDataSize-dataSize; i=i+1) {  // ページ境界まで0を書き込み
+  for (int i=0;i<wDataSize-dataSize;i=i+1) { // ページ境界まで0を書き込み
     putB(0);
   }
 
