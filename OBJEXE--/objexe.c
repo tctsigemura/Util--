@@ -2,7 +2,7 @@
  * TaC-OS Source Code
  *    Tokuyama kousen Advanced educational Computer.
  *
- * Copyright (C) 2011 - 2022 by
+ * Copyright (C) 2011 - 2023 by
  *                      Dept. of Computer Science and Electronic Engineering,
  *                      Tokuyama College of Technology, JAPAN
  *
@@ -25,8 +25,9 @@
 
 /*
  *
+ * 2023.03.21  : プログラムが64KiBより大きくなっている場合エラーで止める
  * 2022.06.29  : EXEファイルをページングに対応
- * 2017.01.1i  : IOPR を -P オプションに変更
+ * 2017.01.11  : IOPR を -P オプションに変更
  * 2017.01.11  : 実行モードの種類を変更（KERN 廃止、IOPR 追加）
  * 2016.12/28  : EXEファイルのマジック番号を、コマンドラインから与えられた
  *               モードに変更できるように修正
@@ -339,10 +340,15 @@ int main(int argc, char **argv) {
   int wTextSize = (textSize + PAGESIZ - 1) & ~(PAGESIZ - 1);
   // ページサイズで切り上げたDataセグメントのサイズ
   int wDataSize = (dataSize + PAGESIZ - 1) & ~(PAGESIZ - 1);
-  // Dataセグメントのページに入るBssセグメントのサイズを引いたBssセグメントのサイズ
+  // Bssセグメントのサイズからデータセグメントに配置される部分を引いたサイズ
   int wBssSize =  bssSize - ((dataSize/PAGESIZ+1)*PAGESIZ - dataSize);
-  if(wBssSize < 0 ){                          // サイズが負になっていたら
+  if (wBssSize < 0 ) {                        // サイズが負になっていたら
     wBssSize = 0;                             // サイズを0にする
+  }
+
+  // 64KiBより大きくなっていないか
+  if (wTextSize+wDataSize+wBssSize > 0xffff) {
+    error("Too Big obj (>64KiB)");
   }
 
   // ヘッダ出力
