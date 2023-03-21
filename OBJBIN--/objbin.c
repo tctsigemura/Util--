@@ -215,7 +215,7 @@ void readSymTbl() {                           // 記号表の読み込み
 }
 
 /* 再配置表 */
-#define REL_SIZ  4500                         // 再配置表の大きさ
+#define REL_SIZ  5500                         // 再配置表の大きさ
 
 struct Reloc {                                // 再配置表
   int addr;                                   // ポインタのセグメント内 Offs
