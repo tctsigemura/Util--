@@ -2,7 +2,7 @@
 # TaC Assembler Source Code
 #    Tokuyama kousen Educational Computer 16 bit Version
 #
-# Copyright (C) 2008-2016 by
+# Copyright (C) 2008-2025 by
 #                      Dept. of Computer Science and Electronic Engineering,
 #                      Tokuyama College of Technology, JAPAN
 #
@@ -19,6 +19,7 @@
 #
 # Makefile : AS-- の Makefile
 #
+# 2025.06.20         : CFLAGS に -fcommon 追加（wsl2対応）
 # 2016.10.09  v3.0.0 : バージョン番号をUtil--で共用にする
 # 2016.02.05  v2.1.1 : BSS の２重定義に関するバグ訂正
 # 2012.09.29  v2.1.0 : OP Rd,0,Rx を OP Rd,%Rx と解釈するなどの拡張
@@ -32,6 +33,7 @@
 #
 
 CC=cc -std=c99
+CFLAGS=-fcommon
 VER=\"`cat ../VERSION`\"
 DATE="\"`date`\""
 

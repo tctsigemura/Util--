@@ -1,0 +1,6 @@
+public int a;
+public int b;
+int c=-1;
+
+void f() {}
+
